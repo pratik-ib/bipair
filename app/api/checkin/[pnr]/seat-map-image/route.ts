@@ -18,8 +18,13 @@ export async function GET(request: NextRequest, { params }: { params: { pnr: str
       .from('bookings').select('seat_number').eq('flight_id', booking.flight_id).neq('status', 'cancelled');
     const occupiedSeats = bookingsRaw?.map(b => b.seat_number).filter(Boolean) || [];
 
-    // Use the booking's fare class to restrict seat selection
-    const fareClass = booking.fare_class as 'economy' | 'business' | 'first_class' | undefined;
+    // Normalize the booking's fare class to ensure correct matching
+    const fareClassMap: Record<string, 'economy' | 'business' | 'first_class'> = {
+      'economy': 'economy',
+      'business': 'business',
+      'first_class': 'first_class',
+    };
+    const fareClass = fareClassMap[booking.fare_class] || undefined;
 
     const imageBuffer = await generateSeatMapImage({
       flightNumber: flight.flight_number,
