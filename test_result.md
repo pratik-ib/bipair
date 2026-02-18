@@ -242,9 +242,9 @@ backend:
 
   - task: "Chatbot Check-in API"
     implemented: true
-    working: false
+    working: true
     file: "app/api/checkin/[pnr]/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -254,6 +254,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: Same Supabase authentication issue affects this API."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Check-in API working correctly! Returns proper 404 for non-existent PNRs. API key validation and error handling functional."
 
   - task: "Payments API (initiate/process/status)"
     implemented: true
