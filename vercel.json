@@ -1,5 +1,13 @@
 {
   "framework": "nextjs",
   "buildCommand": "next build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/flights/[id]/seat-map-image/route.ts": {
+      "includeFiles": "public/fonts/**"
+    },
+    "app/api/checkin/[pnr]/seat-map-image/route.ts": {
+      "includeFiles": "public/fonts/**"
+    }
+  }
 }
