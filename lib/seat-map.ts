@@ -6,39 +6,37 @@ import fs from 'fs';
 // Register fonts for Vercel serverless environment
 function registerFonts() {
   try {
-    // Try public/fonts directory first (TTF files)
+    // Try public/fonts directory (woff2 files bundled with deployment)
     const publicFontsPath = path.join(process.cwd(), 'public/fonts');
-    const regularTTF = path.join(publicFontsPath, 'Inter-Regular.ttf');
-    const boldTTF = path.join(publicFontsPath, 'Inter-Bold.ttf');
+    const regularFont = path.join(publicFontsPath, 'Inter-Regular.woff2');
+    const boldFont = path.join(publicFontsPath, 'Inter-Bold.woff2');
     
-    if (fs.existsSync(regularTTF)) {
-      GlobalFonts.registerFromPath(regularTTF, 'Inter');
-      console.log('[Fonts] Registered Inter-Regular.ttf');
-    }
-    if (fs.existsSync(boldTTF)) {
-      GlobalFonts.registerFromPath(boldTTF, 'InterBold');
-      console.log('[Fonts] Registered Inter-Bold.ttf');
-    }
-    
-    // Fallback to @fontsource/inter if TTF not found
-    if (!fs.existsSync(regularTTF)) {
-      const interPath = path.join(process.cwd(), 'node_modules/@fontsource/inter/files');
-      const regularWoff = path.join(interPath, 'inter-latin-400-normal.woff2');
-      const boldWoff = path.join(interPath, 'inter-latin-700-normal.woff2');
-      
-      if (fs.existsSync(regularWoff)) {
-        GlobalFonts.registerFromPath(regularWoff, 'Inter');
-        console.log('[Fonts] Registered inter-latin-400-normal.woff2');
-      }
-      if (fs.existsSync(boldWoff)) {
-        GlobalFonts.registerFromPath(boldWoff, 'InterBold');
-        console.log('[Fonts] Registered inter-latin-700-normal.woff2');
+    if (fs.existsSync(regularFont)) {
+      GlobalFonts.registerFromPath(regularFont, 'Inter');
+      console.log('[Fonts] Registered Inter-Regular.woff2 from public/fonts');
+    } else {
+      // Fallback to node_modules
+      const nmPath = path.join(process.cwd(), 'node_modules/@fontsource/inter/files');
+      const nmRegular = path.join(nmPath, 'inter-latin-400-normal.woff2');
+      if (fs.existsSync(nmRegular)) {
+        GlobalFonts.registerFromPath(nmRegular, 'Inter');
+        console.log('[Fonts] Registered inter-latin-400-normal.woff2 from node_modules');
       }
     }
     
-    // Log registered fonts for debugging
-    const families = GlobalFonts.families;
-    console.log('[Fonts] Available font families:', families);
+    if (fs.existsSync(boldFont)) {
+      GlobalFonts.registerFromPath(boldFont, 'InterBold');
+      console.log('[Fonts] Registered Inter-Bold.woff2 from public/fonts');
+    } else {
+      const nmPath = path.join(process.cwd(), 'node_modules/@fontsource/inter/files');
+      const nmBold = path.join(nmPath, 'inter-latin-700-normal.woff2');
+      if (fs.existsSync(nmBold)) {
+        GlobalFonts.registerFromPath(nmBold, 'InterBold');
+        console.log('[Fonts] Registered inter-latin-700-normal.woff2 from node_modules');
+      }
+    }
+    
+    console.log('[Fonts] Registration complete');
   } catch (err) {
     console.error('[Fonts] Registration failed:', err);
   }
