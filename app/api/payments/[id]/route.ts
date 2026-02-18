@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
+// Force dynamic rendering - prevent Vercel edge caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { data, error } = await supabaseAdmin.from('payments').select('*').eq('id', params.id).single();
