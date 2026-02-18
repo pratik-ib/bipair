@@ -178,7 +178,7 @@ export async function generateBoardingPassPDF(pnr: string): Promise<Buffer> {
   if (!flight) throw new Error('Flight not found');
 
   const boardingTime = new Date(new Date(flight.departure_time).getTime() - 30 * 60000);
-  const boardingTimeStr = boardingTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const boardingTimeStr = boardingTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
   const pdfDoc = await PDFDocument.create();
   // Landscape A5: 595 x 420
