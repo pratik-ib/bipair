@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
     if (origin) query = query.ilike('origin', `%${origin}%`);
     if (destination) query = query.ilike('destination', `%${destination}%`);
     if (date) {
-      query = query.gte('departure_time', `${date}T00:00:00Z`).lt('departure_time', `${date}T23:59:59Z`);
+      // Use proper date range: from start of day to start of next day
+      const startDate = new Date(`${date}T00:00:00Z`);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 1);
+      query = query.gte('departure_time', startDate.toISOString()).lt('departure_time', endDate.toISOString());
     }
 
     const { data: flights, error } = await query.order('departure_time');
