@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
-import { getDurationMinutes } from '@/lib/utils';
+import { getDurationMinutes } from '@/lib/bipair-utils';
 
 export async function GET(request: NextRequest) {
   const { valid } = validateApiKey(request);

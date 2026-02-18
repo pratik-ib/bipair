@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
-import { generatePNR } from '@/lib/utils';
+import { generatePNR } from '@/lib/bipair-utils';
 
 const LOYALTY_POINTS: Record<string, number> = {
   economy: 100,

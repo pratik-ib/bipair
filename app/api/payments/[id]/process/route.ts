@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { generateTransactionRef } from '@/lib/utils';
+import { generateTransactionRef } from '@/lib/bipair-utils';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
