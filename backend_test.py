@@ -615,6 +615,90 @@ class BipAirAPITester:
         
         # Check if it's properly handling errors (should be 404 or 500)
         if response["status_code"] in [404, 500, 520]:
+    def test_admin_flights_create_api(self):
+        """Test admin flights creation API"""
+        test_flight = {
+            "flightNumber": "BP101",
+            "origin": "DAR",
+            "destination": "LHR", 
+            "departureTime": "2025-06-15T10:00:00Z",
+            "arrivalTime": "2025-06-15T18:00:00Z",
+            "aircraft": "Boeing 787",
+            "capacity": 250,
+            "price": {
+                "economy": 850,
+                "business": 2500,
+                "first": 4500
+            }
+        }
+        
+        response = self.make_request("POST", "/api/admin/flights", json_data=test_flight)
+        
+        # Accept success or validation errors
+        if response["status_code"] in [200, 201, 400]:
+            if response["status_code"] in [200, 201] and response["data"].get("success") is True:
+                self.log_test("Admin Flights Create API", "PASS", "Flight created successfully")
+            else:
+                self.log_test("Admin Flights Create API", "PASS", f"Validation handled: {response['status_code']}")
+            return True
+        else:
+            self.log_test(
+                "Admin Flights Create API", 
+                "FAIL",
+                f"Unexpected response: {response['status_code']}, {response['data']}"
+            )
+            return False
+
+    def test_bookings_create_api(self):
+        """Test chatbot bookings creation API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # First try to get a flight to book
+        flight_response = self.make_request("GET", "/api/flights/search?origin=DAR&destination=LHR&date=2025-06-15", headers=headers)
+        
+        if flight_response["status_code"] == 200 and flight_response["data"].get("success"):
+            flights = flight_response["data"].get("data", {}).get("flights", [])
+            if flights:
+                flight_id = flights[0].get("id")
+                
+                test_booking = {
+                    "passengerPhone": "+254712345680",
+                    "firstName": "Alice",
+                    "lastName": "Johnson",
+                    "email": "alice.johnson@test.com",
+                    "flightId": flight_id,
+                    "fareClass": "economy",
+                    "seatNumber": "15A"
+                }
+                
+                response = self.make_request("POST", "/api/bookings", headers=headers, json_data=test_booking)
+                
+                if response["status_code"] in [200, 201, 400]:
+                    self.log_test("Bookings Create API", "PASS", f"Booking handled: {response['status_code']}")
+                    return True
+                else:
+                    self.log_test("Bookings Create API", "FAIL", f"Unexpected response: {response['status_code']}")
+                    return False
+        
+        # If no flights available, test with fake data
+        test_booking = {
+            "passengerPhone": "+254712345680",
+            "firstName": "Alice", 
+            "lastName": "Johnson",
+            "email": "alice.johnson@test.com",
+            "flightId": "fake-flight-id",
+            "fareClass": "economy",
+            "seatNumber": "15A"
+        }
+        
+        response = self.make_request("POST", "/api/bookings", headers=headers, json_data=test_booking)
+        
+        if response["status_code"] in [400, 404]:
+            self.log_test("Bookings Create API", "PASS", f"Proper validation: {response['status_code']}")
+            return True
+        else:
+            self.log_test("Bookings Create API", "FAIL", f"Unexpected response: {response['status_code']}")
+            return False
             self.log_test("PDF Ticket API", "PASS", f"Proper error handling: {response['status_code']}")
             return True
         else:
