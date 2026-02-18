@@ -931,6 +931,103 @@ curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/boarding-pass/
 
 ---
 
+## Webhooks
+
+BipAir supports webhook notifications to automatically notify your system when payment events occur.
+
+### Setting Up Webhooks
+
+When creating a booking, include the `webhookUrl` field in your request:
+
+```json
+{
+  "passengerPhone": "+255712345678",
+  "firstName": "John",
+  "lastName": "Doe",
+  "flightId": "flight-uuid",
+  "fareClass": "economy",
+  "webhookUrl": "https://your-server.com/webhooks/bipair"
+}
+```
+
+### Payment Success Webhook
+
+When a payment is successfully processed, BipAir will send a POST request to your webhook URL with the following payload:
+
+```json
+{
+  "event": "payment.success",
+  "pnr": "BP7X2K",
+  "paymentId": "payment-uuid",
+  "amount": 450,
+  "currency": "USD",
+  "transactionRef": "TXN1234567890ABCD",
+  "ticketUrl": "https://bipair-tickets.preview.emergentagent.com/api/ticket/BP7X2K",
+  "checkInUrl": "https://bipair-tickets.preview.emergentagent.com/checkin/BP7X2K",
+  "boardingPassUrl": "https://bipair-tickets.preview.emergentagent.com/api/boarding-pass/BP7X2K",
+  "passenger": {
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "+255712345678",
+    "email": "john.doe@email.com",
+    "loyaltyPoints": 100
+  },
+  "flight": {
+    "flightNumber": "BP101",
+    "origin": "DAR",
+    "originCity": "Dar es Salaam",
+    "destination": "LHR",
+    "destinationCity": "London",
+    "departureTime": "2025-06-15T08:00:00Z",
+    "arrivalTime": "2025-06-15T16:30:00Z",
+    "gate": "A12",
+    "terminal": "T1",
+    "status": "scheduled"
+  },
+  "booking": {
+    "seatNumber": "12A",
+    "fareClass": "economy",
+    "bookingSource": "whatsapp",
+    "createdAt": "2025-06-10T14:30:00Z"
+  }
+}
+```
+
+### Webhook Behavior
+
+- **Non-blocking**: Webhook delivery is asynchronous and does not affect the payment response
+- **Retry**: No automatic retry on failure (webhook fires once)
+- **Timeout**: Standard HTTP timeout applies
+- **Content-Type**: `application/json`
+
+### Using Webhook Data
+
+The webhook payload includes everything you need to:
+1. **Send e-ticket**: Use `ticketUrl` to download/forward the PDF ticket
+2. **Enable check-in**: Share `checkInUrl` with the passenger
+3. **Send boarding pass**: After check-in, use `boardingPassUrl`
+4. **Personalize messages**: Use passenger and flight details
+
+### Example Webhook Handler (Node.js)
+
+```javascript
+app.post('/webhooks/bipair', async (req, res) => {
+  const { event, pnr, ticketUrl, passenger, flight } = req.body;
+  
+  if (event === 'payment.success') {
+    // Send confirmation message via WhatsApp
+    await sendWhatsAppMessage(passenger.phone, {
+      text: `✅ Payment confirmed for flight ${flight.flightNumber}!`,
+      document: ticketUrl, // Attach e-ticket PDF
+    });
+  }
+  
+  res.status(200).send('OK');
+});
+```
+
+---
+
 ## Admin APIs
 
 These APIs are for the admin panel and require session-based authentication.
