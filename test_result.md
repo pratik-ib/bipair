@@ -173,9 +173,9 @@ backend:
 
   - task: "Admin Passengers API"
     implemented: true
-    working: false
+    working: true
     file: "app/api/admin/passengers/route.ts, app/api/admin/passengers/[id]/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "medium"
     needs_retesting: false
     status_history:
@@ -185,6 +185,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: Same Supabase authentication issue affects all admin APIs that access database."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Admin passengers API operational! Returns paginated passenger data with proper structure."
 
   - task: "Admin Payments API"
     implemented: true
