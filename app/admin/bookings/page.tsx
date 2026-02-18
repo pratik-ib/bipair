@@ -37,7 +37,8 @@ export default function BookingsPage() {
     else if (action === 'cancel') body = { status: 'cancelled' };
     else if (action === 'paid') body = { payment_status: 'paid', status: 'confirmed' };
     else if (action === 'refund') body = { payment_status: 'refunded' };
-    const r = await fetch(`/api/bookings/${pnr}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    // Use admin endpoint - no API key required
+    const r = await fetch(`/api/admin/bookings/${pnr}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const d = await r.json();
     if (d.success) { toast({title:'Updated successfully'}); load(); if (selected?.pnr === pnr) setSelected({...selected, ...body}); }
     else toast({title:'Error', description:d.error, variant:'destructive'});
