@@ -101,3 +101,329 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "BipAir mock airline management system with admin panel and chatbot REST APIs. Uses Next.js 14, Supabase, iron-session auth, pdf-lib for PDFs, @napi-rs/canvas for seat maps, Recharts for charts."
+
+backend:
+  - task: "Admin Auth (login/logout with iron-session)"
+    implemented: true
+    working: true
+    file: "app/api/auth/login/route.ts, app/api/auth/logout/route.ts, lib/session.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Login API POST /api/auth/login tested with curl - returns success:true. Session secret updated to 38 chars to meet iron-session requirement."
+
+  - task: "Admin Stats Dashboard API"
+    implemented: true
+    working: "NA"
+    file: "app/api/admin/stats/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented KPI stats, 14-day chart data, bookings by source, recent bookings. Needs Supabase data to test."
+
+  - task: "Admin Flights CRUD API"
+    implemented: true
+    working: "NA"
+    file: "app/api/admin/flights/route.ts, app/api/admin/flights/[id]/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET paginated list, POST create, PATCH update, DELETE implemented."
+
+  - task: "Admin Bookings API"
+    implemented: true
+    working: "NA"
+    file: "app/api/admin/bookings/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET with search, paginated, with nested passenger/flight/payment data."
+
+  - task: "Admin Passengers API"
+    implemented: true
+    working: "NA"
+    file: "app/api/admin/passengers/route.ts, app/api/admin/passengers/[id]/route.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET list, GET detail with booking history, PATCH update."
+
+  - task: "Admin Payments API"
+    implemented: true
+    working: "NA"
+    file: "app/api/admin/payments/route.ts, app/api/admin/payments/[id]/refund/route.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET list with booking/passenger info, POST refund."
+
+  - task: "Chatbot Flights Search API"
+    implemented: true
+    working: "NA"
+    file: "app/api/flights/search/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET with origin/destination/date params, returns available seats. Requires x-api-key header."
+
+  - task: "Chatbot Bookings API (create/get/update/delete)"
+    implemented: true
+    working: "NA"
+    file: "app/api/bookings/route.ts, app/api/bookings/[pnr]/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST create booking with passenger lookup/creation, PNR generation, payment record. GET/PATCH/DELETE by PNR."
+
+  - task: "Chatbot Check-in API"
+    implemented: true
+    working: "NA"
+    file: "app/api/checkin/[pnr]/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET check-in status, POST complete check-in with seat assignment."
+
+  - task: "Payments API (initiate/process/status)"
+    implemented: true
+    working: "NA"
+    file: "app/api/payments/initiate/route.ts, app/api/payments/[id]/process/route.ts"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST initiate, POST process (90% success simulation), GET status."
+
+  - task: "Passengers API (chatbot)"
+    implemented: true
+    working: "NA"
+    file: "app/api/passengers/route.ts, app/api/passengers/[phone]/route.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST create/get by phone, GET profile + booking history by phone."
+
+  - task: "Notifications API"
+    implemented: true
+    working: "NA"
+    file: "app/api/notifications/send/route.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST log notification to DB."
+
+  - task: "Seat Map Image Generation API"
+    implemented: true
+    working: "NA"
+    file: "app/api/flights/[id]/seat-map-image/route.ts, lib/seat-map.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET PNG stream or upload to Supabase storage. Uses @napi-rs/canvas."
+
+  - task: "PDF Ticket and Boarding Pass Generation"
+    implemented: true
+    working: "NA"
+    file: "app/api/ticket/[pnr]/route.ts, app/api/boarding-pass/[pnr]/route.ts, lib/pdf.ts"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET PDF for ticket and boarding pass. Boarding pass requires checked_in status."
+
+frontend:
+  - task: "Admin Login Page"
+    implemented: true
+    working: true
+    file: "app/login/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Dark themed login page with BipAir orange branding renders correctly. Tested visually."
+
+  - task: "Admin Dashboard"
+    implemented: true
+    working: "NA"
+    file: "app/admin/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "KPI cards, line chart, pie chart, recent bookings table."
+
+  - task: "Admin Flights Management"
+    implemented: true
+    working: "NA"
+    file: "app/admin/flights/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Table with add/edit/delete modals, inline status update."
+
+  - task: "Admin Bookings Management"
+    implemented: true
+    working: "NA"
+    file: "app/admin/bookings/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Table with search, detail modal with actions."
+
+  - task: "Admin Passengers Management"
+    implemented: true
+    working: "NA"
+    file: "app/admin/passengers/page.tsx, app/admin/passengers/[id]/page.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "List + detail page with loyalty points adjustment."
+
+  - task: "Admin Payments Page"
+    implemented: true
+    working: "NA"
+    file: "app/admin/payments/page.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Payment list with refund action."
+
+  - task: "Admin Notifications Page"
+    implemented: true
+    working: "NA"
+    file: "app/admin/notifications/page.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Send panel with templates, notification log table."
+
+  - task: "Admin Settings Page"
+    implemented: true
+    working: "NA"
+    file: "app/admin/settings/page.tsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "API key display, endpoint reference, request headers."
+
+  - task: "Checkout Payment Page"
+    implemented: true
+    working: "NA"
+    file: "app/checkout/[paymentId]/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Mock payment form with card formatting, 90% success simulation."
+
+  - task: "Payment Success Page"
+    implemented: true
+    working: "NA"
+    file: "app/checkout/[paymentId]/success/page.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Success page with PNR, ticket download, WhatsApp checkin info."
+
+  - task: "Check-in Confirmation Page"
+    implemented: true
+    working: "NA"
+    file: "app/checkin/[pnr]/page.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Shows checkin status, boarding pass download for checked_in bookings."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Admin Auth (login/logout with iron-session)"
+    - "Admin Stats Dashboard API"
+    - "Admin Flights CRUD API"
+    - "Chatbot Flights Search API"
+    - "Chatbot Bookings API (create/get/update/delete)"
+    - "Payments API (initiate/process/status)"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Built full BipAir system: admin panel (login, dashboard, flights, bookings, passengers, payments, notifications, settings), chatbot REST APIs (flights search, bookings CRUD, checkin, payments, passengers, notifications), seat map image generation with @napi-rs/canvas, PDF generation with pdf-lib, customer pages (checkout, checkin confirmation). Auth: iron-session v8. DB: Supabase with service role key. Test admin login with: username=admin, password=Infobip@123. For chatbot APIs use header: x-api-key: bipair-demo-key-2026. App URL: https://bipair-checkout.preview.emergentagent.com. Backend URL base: http://localhost:3000"
