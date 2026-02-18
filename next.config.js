@@ -5,7 +5,7 @@ const nextConfig = {
   },
   experimental: {
     // Remove if not using Server Components
-    serverComponentsExternalPackages: ['mongodb'],
+    serverComponentsExternalPackages: ['mongodb', '@napi-rs/canvas', 'pdf-lib', 'qrcode'],
   },
   webpack(config, { dev }) {
     if (dev) {
