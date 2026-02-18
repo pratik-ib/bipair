@@ -1,5 +1,31 @@
-import { createCanvas, Canvas, CanvasRenderingContext2D } from '@napi-rs/canvas';
+import { createCanvas, Canvas, CanvasRenderingContext2D, GlobalFonts } from '@napi-rs/canvas';
 import { supabaseAdmin } from './supabase';
+import path from 'path';
+import fs from 'fs';
+
+// Register fonts for Vercel serverless environment
+function registerFonts() {
+  try {
+    // Use fontsource inter package which is bundled with node_modules
+    const interPath = path.join(
+      process.cwd(), 
+      'node_modules/@fontsource/inter/files'
+    );
+    
+    const regularFontPath = path.join(interPath, 'inter-latin-400-normal.woff2');
+    const boldFontPath = path.join(interPath, 'inter-latin-700-normal.woff2');
+    
+    if (fs.existsSync(regularFontPath)) {
+      GlobalFonts.registerFromPath(regularFontPath, 'Inter');
+    }
+    if (fs.existsSync(boldFontPath)) {
+      GlobalFonts.registerFromPath(boldFontPath, 'InterBold');
+    }
+  } catch (err) {
+    console.error('Font registration failed:', err);
+    // Fallback silently - canvas will use default font
+  }
+}
 
 // Reduced canvas width - removed empty space
 const CANVAS_WIDTH = 420;
@@ -128,6 +154,9 @@ export interface SeatMapOptions {
 }
 
 export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buffer> {
+  // Register fonts first - critical for Vercel serverless
+  registerFonts();
+  
   const { flightNumber, originCity, destinationCity, occupiedSeats, highlightSeat, headerText, fareClass, seatConfig } = options;
   
   // Calculate dynamic rows based on seat configuration
@@ -149,7 +178,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
   ctx.fillRect(0, 0, CANVAS_WIDTH, 70);
 
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px sans-serif';
+  ctx.font = 'bold 24px InterBold';
   ctx.textAlign = 'center';
   ctx.fillText('BipAir', CANVAS_WIDTH / 2, 45);
 
@@ -159,7 +188,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
 
   // Subtitle
   ctx.fillStyle = '#ffffff';
-  ctx.font = '13px sans-serif';
+  ctx.font = '13px Inter';
   ctx.textAlign = 'center';
   ctx.fillText(`${flightNumber} - ${originCity} to ${destinationCity}`, CANVAS_WIDTH / 2, 95);
 
@@ -179,12 +208,11 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
   }
   
   ctx.fillStyle = '#aaaaaa';
-  ctx.font = '11px sans-serif';
+  ctx.font = '11px Inter';
   ctx.fillText(headerLabel, CANVAS_WIDTH / 2, 125);
 
   // Column headers
-  const colLabels = ['A', 'B', 'C', '', 'D', 'E', 'F'];
-  ctx.font = 'bold 11px sans-serif';
+  ctx.font = 'bold 11px InterBold';
   ctx.textAlign = 'center';
   
   COLS.forEach((col, colIdx) => {
@@ -195,7 +223,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
   
   // Aisle label
   ctx.fillStyle = '#444444';
-  ctx.font = '8px sans-serif';
+  ctx.font = '8px Inter';
   const aisleX = LEFT_MARGIN + 3 * (SEAT_W + SEAT_GAP_H) + AISLE_GAP / 2 - 5;
   ctx.fillText('AISLE', aisleX, 148);
 
@@ -222,7 +250,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
       }
       
       ctx.fillStyle = labelColor;
-      ctx.font = '8px sans-serif';
+      ctx.font = '8px Inter';
       ctx.textAlign = 'right';
       ctx.save();
       ctx.translate(6, y + SEAT_H / 2 + 3);
@@ -233,7 +261,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
 
     // Row number
     ctx.fillStyle = '#666666';
-    ctx.font = '10px sans-serif';
+    ctx.font = '10px Inter';
     ctx.textAlign = 'right';
     ctx.fillText(String(row), 38, y + SEAT_H / 2 + 3);
 
@@ -279,7 +307,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
 
       // Seat label
       ctx.fillStyle = textColor;
-      ctx.font = isHighlighted ? 'bold 10px sans-serif' : '9px sans-serif';
+      ctx.font = isHighlighted ? 'bold 10px InterBold' : '9px Inter';
       ctx.textAlign = 'center';
       ctx.fillText(seatId, x + SEAT_W / 2, y + SEAT_H / 2 + 3);
     });
@@ -292,7 +320,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
   
   // Legend title
   ctx.fillStyle = '#666666';
-  ctx.font = 'bold 9px sans-serif';
+  ctx.font = 'bold 9px InterBold';
   ctx.textAlign = 'center';
   ctx.fillText('LEGEND', CANVAS_WIDTH / 2, legendY + 14);
 
@@ -316,7 +344,7 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
     roundRect(ctx, lx, ly, 12, 12, 2);
     ctx.fill();
     ctx.fillStyle = '#888888';
-    ctx.font = '9px sans-serif';
+    ctx.font = '9px Inter';
     ctx.textAlign = 'left';
     ctx.fillText(item.label, lx + 15, ly + 9);
   });
@@ -331,13 +359,13 @@ export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buf
 
   const classLabel = fareClass ? (fareClass === 'first_class' ? 'First Class' : fareClass.charAt(0).toUpperCase() + fareClass.slice(1)) : 'Total';
   ctx.fillStyle = '#888888';
-  ctx.font = '10px sans-serif';
+  ctx.font = '10px Inter';
   ctx.textAlign = 'center';
   ctx.fillText(`${availableSeats} ${classLabel} seats available`, CANVAS_WIDTH / 2, legendY + 58);
 
   // Footer
   ctx.fillStyle = '#FF6600';
-  ctx.font = 'bold 10px sans-serif';
+  ctx.font = 'bold 10px InterBold';
   ctx.textAlign = 'center';
   ctx.fillText('Reply with seat number (e.g. 5A)', CANVAS_WIDTH / 2, canvasHeight - 12);
 
