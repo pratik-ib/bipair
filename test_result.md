@@ -453,11 +453,16 @@ test_plan:
     - "Chatbot Flights Search API"
     - "Chatbot Bookings API (create/get/update/delete)"
     - "Payments API (initiate/process/status)"
+    - "Chatbot Check-in API"
+    - "Passengers API (chatbot)"
+    - "Notifications API"
+    - "Seat Map Image Generation API"
+    - "PDF Ticket and Boarding Pass Generation"
   stuck_tasks:
     - "Admin Flights CRUD API"
     - "Admin Bookings API"
     - "Chatbot Flights Search API"
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
@@ -465,3 +470,5 @@ agent_communication:
     message: "Built full BipAir system: admin panel (login, dashboard, flights, bookings, passengers, payments, notifications, settings), chatbot REST APIs (flights search, bookings CRUD, checkin, payments, passengers, notifications), seat map image generation with @napi-rs/canvas, PDF generation with pdf-lib, customer pages (checkout, checkin confirmation). Auth: iron-session v8. DB: Supabase with service role key. Test admin login with: username=admin, password=Infobip@123. For chatbot APIs use header: x-api-key: bipair-demo-key-2026. App URL: https://bipair-tickets.preview.emergentagent.com. Backend URL base: http://localhost:3000"
   - agent: "testing"
     message: "TESTING COMPLETE: Found critical issue - Supabase service role key in .env is invalid (starts with 'ysb_' instead of 'sb_'). This causes all database-dependent APIs to fail with 'Invalid API key' error. APIs without DB access work correctly (auth, API key validation, error handling). Need to fix Supabase credentials to enable full functionality."
+  - agent: "main"
+    message: "User requested comprehensive backend testing of ALL APIs and API documentation. Running full test suite. All APIs requiring chatbot access need header: x-api-key: bipair-demo-key-2026. Admin endpoints don't require API key (session-based). Test all endpoints systematically. Note: Supabase keys may have been fixed by user - retest all database-dependent endpoints."
