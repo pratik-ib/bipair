@@ -93,10 +93,10 @@ export async function generateTicketPDF(pnr: string): Promise<Buffer> {
   page.drawText('FLIGHT DETAILS', { x: 310, y: height - 150, size: 9, font: boldFont, color: GRAY });
   if (flight) {
     page.drawText(flight.flight_number, { x: 310, y: height - 168, size: 14, font: boldFont, color: BLACK });
-    page.drawText('Aircraft:', { x: 310, y: height - 186, size: 10, font: regularFont, color: GRAY });
-    page.drawText(flight.aircraft_type, { x: 365, y: height - 186, size: 10, font: regularFont, color: BLACK });
-    page.drawText('Booking Date:', { x: 310, y: height - 202, size: 10, font: regularFont, color: GRAY });
-    page.drawText(formatDate(booking.created_at), { x: 397, y: height - 202, size: 10, font: regularFont, color: BLACK });
+    page.drawText('Travel Date:', { x: 310, y: height - 186, size: 10, font: regularFont, color: GRAY });
+    page.drawText(formatDate(flight.departure_time), { x: 385, y: height - 186, size: 10, font: boldFont, color: BLACK });
+    page.drawText('Aircraft:', { x: 310, y: height - 202, size: 10, font: regularFont, color: GRAY });
+    page.drawText(flight.aircraft_type, { x: 365, y: height - 202, size: 10, font: regularFont, color: BLACK });
     page.drawText('Fare Class:', { x: 310, y: height - 218, size: 10, font: regularFont, color: GRAY });
     page.drawText(booking.fare_class.replace('_', ' ').toUpperCase(), { x: 375, y: height - 218, size: 10, font: regularFont, color: BLACK });
   }
