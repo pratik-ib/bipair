@@ -29,6 +29,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       occupiedSeats,
       highlightSeat: highlight,
       fareClass,
+      seatConfig: {
+        economySeats: flight.economy_seats || 48,
+        businessSeats: flight.business_seats || 24,
+        firstClassSeats: flight.first_class_seats || 12,
+      },
     });
 
     if (format === 'url') {
