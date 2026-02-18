@@ -453,7 +453,10 @@ test_plan:
     - "Chatbot Flights Search API"
     - "Chatbot Bookings API (create/get/update/delete)"
     - "Payments API (initiate/process/status)"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Admin Flights CRUD API"
+    - "Admin Bookings API"
+    - "Chatbot Flights Search API"
   test_all: false
   test_priority: "high_first"
 
