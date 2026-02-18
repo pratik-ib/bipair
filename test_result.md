@@ -474,21 +474,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin Auth (login/logout with iron-session)"
-    - "Admin Stats Dashboard API"
-    - "Admin Flights CRUD API"
-    - "Chatbot Flights Search API"
-    - "Chatbot Bookings API (create/get/update/delete)"
-    - "Payments API (initiate/process/status)"
-    - "Chatbot Check-in API"
-    - "Passengers API (chatbot)"
-    - "Notifications API"
-    - "Seat Map Image Generation API"
     - "PDF Ticket and Boarding Pass Generation"
   stuck_tasks:
-    - "Admin Flights CRUD API"
-    - "Admin Bookings API"
-    - "Chatbot Flights Search API"
+    - "PDF Ticket and Boarding Pass Generation"
   test_all: true
   test_priority: "high_first"
 
