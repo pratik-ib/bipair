@@ -4,7 +4,8 @@ import { generateTransactionRef } from '@/lib/bipair-utils';
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { cardLastFour, cardholderName } = await request.json();
+    const body = await request.json();
+    const { cardLastFour, cardholderName, forceSuccess } = body;
     
     // Fetch payment with booking details
     const { data: payment } = await supabaseAdmin
@@ -15,9 +16,12 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     
     if (!payment) return NextResponse.json({ success: false, error: 'Payment not found' }, { status: 404 });
 
-    // 90% success, 10% failure
-    const isSuccess = Math.random() < 0.9;
+    // Mock payment: 90% success, 10% failure (unless forceSuccess is true)
+    // Set forceSuccess: true in request body to always succeed (useful for testing)
+    const isSuccess = forceSuccess === true || Math.random() < 0.9;
     const transactionRef = generateTransactionRef();
+
+    console.log(`[Payment] Processing payment ${params.id}, forceSuccess=${forceSuccess}, result=${isSuccess ? 'SUCCESS' : 'FAILED'}`);
 
     if (isSuccess) {
       // Update payment status
