@@ -46,8 +46,6 @@ function calculateRows(config: SeatConfig): RowInfo[] {
   // Economy: 6 seats per row
   const economyRows = Math.ceil(config.economySeats / 6);
   for (let i = 0; i < economyRows; i++) {
-    // Skip row 13 (superstition)
-    if (currentRow === 13) currentRow++;
     rows.push({ row: currentRow++, fareClass: 'economy', cols: COLS });
   }
   
