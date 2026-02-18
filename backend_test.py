@@ -817,6 +817,7 @@ class BipAirAPITester:
         self.test_flight_details_api()
         self.test_seat_map_image_api()
         self.test_chatbot_bookings_api()
+        self.test_bookings_create_api()
         self.test_passengers_api_get()
         self.test_passengers_api_post()
         self.test_checkin_api()
