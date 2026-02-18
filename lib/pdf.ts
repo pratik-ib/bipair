@@ -1,7 +1,7 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import QRCode from 'qrcode';
 import { supabaseAdmin } from './supabase';
-import { getDurationMinutes, formatDuration, formatDate, formatTime } from './utils';
+import { getDurationMinutes, formatDuration, formatDate, formatTime } from './bipair-utils';
 
 function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
