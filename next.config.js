@@ -11,9 +11,13 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@napi-rs/canvas', 'pdf-lib', 'qrcode'],
   },
-  // Ensure @napi-rs/canvas binaries are included in serverless deployment
+  // Ensure @napi-rs/canvas binaries and fonts are included in serverless deployment
   outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/@napi-rs/canvas/**/*'],
+    '/api/**/*': [
+      './node_modules/@napi-rs/canvas/**/*',
+      './node_modules/@fontsource/inter/**/*',
+      './public/fonts/**/*',
+    ],
   },
   webpack(config, { dev, isServer }) {
     if (isServer) {
