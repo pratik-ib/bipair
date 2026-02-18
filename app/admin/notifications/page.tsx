@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Send, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/bipair-utils';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

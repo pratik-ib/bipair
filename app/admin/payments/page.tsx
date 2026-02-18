@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatDateTime, formatCurrency } from '@/lib/utils';
+import { formatDateTime, formatCurrency } from '@/lib/bipair-utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 

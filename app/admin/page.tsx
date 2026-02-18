@@ -4,7 +4,7 @@ import { StatsCard } from '@/components/admin/stats-card';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { Plane, Ticket, DollarSign, CheckSquare } from 'lucide-react';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { formatCurrency, formatDateTime } from '@/lib/utils';
+import { formatCurrency, formatDateTime } from '@/lib/bipair-utils';
 
 const COLORS = ['#FF6600', '#3b82f6', '#22c55e'];
 

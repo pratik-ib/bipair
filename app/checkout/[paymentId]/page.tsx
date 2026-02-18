@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Lock, CreditCard, AlertCircle } from 'lucide-react';
-import { formatCurrency, formatDateTime } from '@/lib/utils';
+import { formatCurrency, formatDateTime } from '@/lib/bipair-utils';
 
 function formatCardNumber(v: string) {
   return v.replace(/\D/g,'').slice(0,16).replace(/(\d{4})/g,'$1 ').trim();

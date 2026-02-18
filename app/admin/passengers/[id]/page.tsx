@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { ArrowLeft, Plus, Minus } from 'lucide-react';
-import { formatDate, formatDateTime, formatCurrency } from '@/lib/utils';
+import { formatDate, formatDateTime, formatCurrency } from '@/lib/bipair-utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 

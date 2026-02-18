@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Copy, Check, Download, MessageCircle } from 'lucide-react';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/bipair-utils';
 
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);

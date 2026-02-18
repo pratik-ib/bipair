@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { CheckCircle2, Plane, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime } from '@/lib/bipair-utils';
 
 export default function CheckinConfirmPage() {
   const params = useParams();
