@@ -44,7 +44,7 @@ class BipAirAPITester:
             "details": details
         })
 
-    def make_request(self, method: str, endpoint: str, headers: Dict = None, json_data: Dict = None) -> Dict:
+    def make_request(self, method: str, endpoint: str, headers: Dict = None, json_data: Dict = None, expect_json: bool = True) -> Dict:
         """Make HTTP request with error handling"""
         try:
             url = f"{self.base_url}{endpoint}"
@@ -56,6 +56,15 @@ class BipAirAPITester:
                 headers=req_headers,
                 json=json_data
             )
+            
+            # If we don't expect JSON (e.g., PDF files), return different structure
+            if not expect_json:
+                return {
+                    "status_code": response.status_code,
+                    "content_type": response.headers.get("content-type", ""),
+                    "content_length": len(response.content),
+                    "headers": dict(response.headers)
+                }
             
             return {
                 "status_code": response.status_code,
@@ -69,6 +78,14 @@ class BipAirAPITester:
                 "headers": {}
             }
         except json.JSONDecodeError:
+            # For endpoints that might return non-JSON content
+            if not expect_json:
+                return {
+                    "status_code": response.status_code,
+                    "content_type": response.headers.get("content-type", ""),
+                    "content_length": len(response.content),
+                    "headers": dict(response.headers)
+                }
             return {
                 "status_code": response.status_code,
                 "data": {"error": "Invalid JSON response"},
