@@ -209,9 +209,9 @@ backend:
 
   - task: "Chatbot Flights Search API"
     implemented: true
-    working: false
+    working: true
     file: "app/app/api/flights/search/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -221,6 +221,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: API key validation works (returns 401 Unauthorized without key), but with valid key returns 500 due to same Supabase issue. Also missing getDurationMinutes import from utils."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Chatbot flights search now fully operational! API key validation works correctly (401 without key), returns flight data with valid x-api-key header. Core search functionality working."
 
   - task: "Chatbot Bookings API (create/get/update/delete)"
     implemented: true
