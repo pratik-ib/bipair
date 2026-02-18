@@ -28,19 +28,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     if (!flight) return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
 
     // Query all bookings for this flight (not cancelled)
-    const { data: bookings, error: bookingsError } = await supabaseAdmin
+    const { data: bookings } = await supabaseAdmin
       .from('bookings')
       .select('seat_number, status')
       .eq('flight_id', params.id);
-    
-    console.log(`[SeatMap] Flight ${params.id}: all bookings:`, bookings);
     
     // Filter out cancelled bookings and extract seat numbers
     const occupiedSeats = bookings
       ?.filter(b => b.status !== 'cancelled' && b.seat_number)
       .map(b => b.seat_number) || [];
-    
-    console.log(`[SeatMap] Flight ${params.id}: occupiedSeats =`, occupiedSeats);
 
     const imageBuffer = await generateSeatMapImage({
       flightNumber: flight.flight_number,
