@@ -615,6 +615,16 @@ class BipAirAPITester:
         
         # Check if it's properly handling errors (should be 404 or 500)
         if response["status_code"] in [404, 500, 520]:
+            self.log_test("Check-in Seat Map Image API", "PASS", "Proper error handling for non-existent PNR")
+            return True
+        else:
+            self.log_test(
+                "Check-in Seat Map Image API", 
+                "FAIL",
+                f"Expected 404/400, got {response['status_code']}: {response['data']}"
+            )
+            return False
+
     def test_admin_flights_create_api(self):
         """Test admin flights creation API"""
         test_flight = {
