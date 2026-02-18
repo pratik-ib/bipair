@@ -13,7 +13,14 @@ const nextConfig = {
     // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb', '@napi-rs/canvas', 'pdf-lib', 'qrcode'],
   },
-  webpack(config, { dev }) {
+  webpack(config, { dev, isServer }) {
+    if (isServer) {
+      // Keep native modules as externals for server builds
+      config.externals = config.externals || [];
+      if (Array.isArray(config.externals)) {
+        config.externals.push('@napi-rs/canvas');
+      }
+    }
     if (dev) {
       // Reduce CPU/memory from file watching
       config.watchOptions = {
