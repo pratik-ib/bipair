@@ -7,6 +7,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { searchParams } = new URL(request.url);
     const highlight = searchParams.get('highlight') || undefined;
     const format = searchParams.get('format');
+    const fareClassParam = searchParams.get('fareClass') || searchParams.get('fare_class');
+    
+    // Validate fare class parameter
+    const validFareClasses = ['economy', 'business', 'first_class'];
+    const fareClass = fareClassParam && validFareClasses.includes(fareClassParam) 
+      ? fareClassParam as 'economy' | 'business' | 'first_class' 
+      : undefined;
 
     const { data: flight } = await supabaseAdmin.from('flights').select('*').eq('id', params.id).single();
     if (!flight) return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
@@ -21,6 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       destinationCity: flight.destination_city,
       occupiedSeats,
       highlightSeat: highlight,
+      fareClass,
     });
 
     if (format === 'url') {
