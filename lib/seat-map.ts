@@ -2,7 +2,7 @@ import { createCanvas, Canvas, CanvasRenderingContext2D } from '@napi-rs/canvas'
 import { supabaseAdmin } from './supabase';
 
 const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 1150;
+const CANVAS_HEIGHT = 1200;
 
 const SEAT_W = 46;
 const SEAT_H = 40;
@@ -10,7 +10,7 @@ const SEAT_GAP_H = 6;
 const SEAT_GAP_V = 8;
 const AISLE_GAP = 28;
 const LEFT_MARGIN = 60;
-const GRID_START_Y = 165;
+const GRID_START_Y = 175;
 
 // Columns: A B C [AISLE] D E F
 const COLS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -39,14 +39,42 @@ function isFirstClassRow(row: number): boolean {
   return row <= 3;
 }
 
-function getSeatColor(row: number, col: string, isOccupied: boolean, isHighlighted: boolean): string {
-  if (isHighlighted) return '#FF6600';
-  if (isOccupied) return '#374151';
-  const fc = getFareClass(row);
-  if (fc === 'first_class') return '#8b5cf6';
-  if (fc === 'business') return '#3b82f6';
-  if (isExtraLegroom(row)) return '#0ea5e9';
-  return '#22c55e';
+function getSeatColor(
+  row: number, 
+  col: string, 
+  isOccupied: boolean, 
+  isHighlighted: boolean,
+  userFareClass?: string
+): { fill: string; textColor: string; isSelectable: boolean } {
+  const seatFareClass = getFareClass(row);
+  
+  // Check if this seat is selectable for the user's fare class
+  const isSelectable = !userFareClass || seatFareClass === userFareClass;
+  
+  if (isHighlighted) {
+    return { fill: '#FF6600', textColor: '#ffffff', isSelectable: true };
+  }
+  
+  if (isOccupied) {
+    return { fill: '#374151', textColor: '#6b7280', isSelectable: false };
+  }
+  
+  // If user has a fare class and this seat is not in their class, show as unavailable
+  if (userFareClass && seatFareClass !== userFareClass) {
+    return { fill: '#2a2a2a', textColor: '#4a4a4a', isSelectable: false };
+  }
+  
+  // Available seats by class
+  if (seatFareClass === 'first_class') {
+    return { fill: '#8b5cf6', textColor: '#ffffff', isSelectable: true };
+  }
+  if (seatFareClass === 'business') {
+    return { fill: '#3b82f6', textColor: '#ffffff', isSelectable: true };
+  }
+  if (isExtraLegroom(row)) {
+    return { fill: '#0ea5e9', textColor: '#ffffff', isSelectable: true };
+  }
+  return { fill: '#22c55e', textColor: '#ffffff', isSelectable: true };
 }
 
 function getColX(colIndex: number): number {
@@ -73,15 +101,18 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
-export async function generateSeatMapImage(options: {
+export interface SeatMapOptions {
   flightNumber: string;
   originCity: string;
   destinationCity: string;
   occupiedSeats: string[];
   highlightSeat?: string;
   headerText?: string;
-}): Promise<Buffer> {
-  const { flightNumber, originCity, destinationCity, occupiedSeats, highlightSeat, headerText } = options;
+  fareClass?: 'economy' | 'business' | 'first_class';
+}
+
+export async function generateSeatMapImage(options: SeatMapOptions): Promise<Buffer> {
+  const { flightNumber, originCity, destinationCity, occupiedSeats, highlightSeat, headerText, fareClass } = options;
   const canvas: Canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D;
 
@@ -96,7 +127,7 @@ export async function generateSeatMapImage(options: {
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 32px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('BipAir ✈', CANVAS_WIDTH / 2, 55);
+  ctx.fillText('BipAir', CANVAS_WIDTH / 2, 55);
 
   // Gray divider
   ctx.fillStyle = '#333333';
@@ -106,13 +137,30 @@ export async function generateSeatMapImage(options: {
   ctx.fillStyle = '#ffffff';
   ctx.font = '16px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`${flightNumber} · ${originCity} → ${destinationCity}`, CANVAS_WIDTH / 2, 115);
+  ctx.fillText(`${flightNumber} - ${originCity} to ${destinationCity}`, CANVAS_WIDTH / 2, 118);
 
-  // Header label
+  // Header label / Fare class indicator
   ctx.fillStyle = '#aaaaaa';
   ctx.font = '13px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(headerText || 'SELECT YOUR SEAT', CANVAS_WIDTH / 2, 133);
+  
+  let headerLabel = headerText || 'SELECT YOUR SEAT';
+  if (fareClass) {
+    const classLabel = fareClass === 'first_class' ? 'FIRST CLASS' : fareClass.toUpperCase();
+    headerLabel = `${classLabel} SEAT SELECTION`;
+    
+    // Add colored indicator for fare class
+    const classColors: Record<string, string> = {
+      'first_class': '#8b5cf6',
+      'business': '#3b82f6',
+      'economy': '#22c55e'
+    };
+    ctx.fillStyle = classColors[fareClass] || '#22c55e';
+    ctx.fillRect(CANVAS_WIDTH / 2 - 100, 130, 200, 3);
+  }
+  
+  ctx.fillStyle = '#aaaaaa';
+  ctx.fillText(headerLabel, CANVAS_WIDTH / 2, 150);
 
   // Column headers
   const colLabels = ['A', 'B', 'C', 'AISLE', 'D', 'E', 'F'];
@@ -136,7 +184,7 @@ export async function generateSeatMapImage(options: {
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 13px sans-serif';
     }
-    ctx.fillText(colLabels[i], x, 158);
+    ctx.fillText(colLabels[i], x, 168);
   });
 
   // Draw seats
@@ -155,6 +203,12 @@ export async function generateSeatMapImage(options: {
       let labelColor = '#22c55e';
       if (fc === 'first_class') { label = 'FIRST'; labelColor = '#8b5cf6'; }
       else if (fc === 'business') { label = 'BUSINESS'; labelColor = '#3b82f6'; }
+      
+      // Dim the label if it's not the user's fare class
+      if (fareClass && fc !== fareClass) {
+        labelColor = '#444444';
+      }
+      
       ctx.fillStyle = labelColor;
       ctx.font = '9px sans-serif';
       ctx.textAlign = 'right';
@@ -182,52 +236,109 @@ export async function generateSeatMapImage(options: {
       const isHighlighted = highlightSeat === seatId;
       const x = getColX(colIdx);
 
-      const fillColor = getSeatColor(row, col, isOccupied, isHighlighted);
-      ctx.fillStyle = fillColor;
+      const { fill, textColor, isSelectable } = getSeatColor(row, col, isOccupied, isHighlighted, fareClass);
+      
+      // Draw seat rectangle
+      ctx.fillStyle = fill;
       roundRect(ctx, x, y, SEAT_W, SEAT_H, 6);
       ctx.fill();
+      
+      // Add border for selectable seats
+      if (isSelectable && !isOccupied && !isHighlighted) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1;
+        roundRect(ctx, x, y, SEAT_W, SEAT_H, 6);
+        ctx.stroke();
+      }
+      
+      // Add X mark for occupied seats
+      if (isOccupied) {
+        ctx.strokeStyle = '#6b7280';
+        ctx.lineWidth = 2;
+        const padding = 12;
+        ctx.beginPath();
+        ctx.moveTo(x + padding, y + padding);
+        ctx.lineTo(x + SEAT_W - padding, y + SEAT_H - padding);
+        ctx.moveTo(x + SEAT_W - padding, y + padding);
+        ctx.lineTo(x + padding, y + SEAT_H - padding);
+        ctx.stroke();
+      }
 
       // Seat label
-      ctx.fillStyle = isOccupied ? '#6b7280' : '#ffffff';
-      ctx.font = '10px sans-serif';
+      ctx.fillStyle = textColor;
+      ctx.font = isHighlighted ? 'bold 11px sans-serif' : '10px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(seatId, x + SEAT_W / 2, y + SEAT_H / 2 + 4);
     });
   });
 
   // Legend section
-  const legendY = CANVAS_HEIGHT - 90;
+  const legendY = CANVAS_HEIGHT - 110;
   ctx.fillStyle = '#111111';
-  ctx.fillRect(0, legendY, CANVAS_WIDTH, 90);
+  ctx.fillRect(0, legendY, CANVAS_WIDTH, 110);
+  
+  // Legend title
+  ctx.fillStyle = '#888888';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('LEGEND', CANVAS_WIDTH / 2, legendY + 18);
 
-  const legendItems = [
-    { color: '#22c55e', label: 'Available' },
-    { color: '#3b82f6', label: 'Business' },
-    { color: '#8b5cf6', label: 'First Class' },
-    { color: '#0ea5e9', label: 'Extra Legroom' },
-    { color: '#374151', label: 'Occupied' },
-    { color: '#FF6600', label: 'Selected' },
-  ];
+  // Build legend items based on fare class
+  const legendItems: Array<{ color: string; label: string }> = [];
+  
+  if (!fareClass || fareClass === 'economy') {
+    legendItems.push({ color: '#22c55e', label: 'Economy' });
+  }
+  if (!fareClass || fareClass === 'economy') {
+    legendItems.push({ color: '#0ea5e9', label: 'Extra Legroom' });
+  }
+  if (!fareClass || fareClass === 'business') {
+    legendItems.push({ color: '#3b82f6', label: 'Business' });
+  }
+  if (!fareClass || fareClass === 'first_class') {
+    legendItems.push({ color: '#8b5cf6', label: 'First Class' });
+  }
+  legendItems.push({ color: '#374151', label: 'Occupied' });
+  legendItems.push({ color: '#FF6600', label: 'Your Seat' });
+  if (fareClass) {
+    legendItems.push({ color: '#2a2a2a', label: 'Not Available' });
+  }
 
-  const legendTotalWidth = legendItems.length * 110;
+  const legendTotalWidth = legendItems.length * 95;
   const legendStartX = (CANVAS_WIDTH - legendTotalWidth) / 2;
 
   legendItems.forEach((item, i) => {
-    const lx = legendStartX + i * 110;
-    const ly = legendY + 35;
+    const lx = legendStartX + i * 95;
+    const ly = legendY + 40;
     ctx.fillStyle = item.color;
-    ctx.fillRect(lx, ly, 14, 14);
+    roundRect(ctx, lx, ly, 14, 14, 3);
+    ctx.fill();
     ctx.fillStyle = '#aaaaaa';
-    ctx.font = '11px sans-serif';
+    ctx.font = '10px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(item.label, lx + 18, ly + 11);
   });
 
-  // Footer
-  ctx.fillStyle = '#666666';
+  // Seat counts summary
+  const availableSeats = rows.reduce((count, row) => {
+    const seatsInRow = isFirstClassRow(row) ? 4 : 6;
+    const rowOccupied = occupiedSeats.filter(s => s.startsWith(String(row))).length;
+    const rowFareClass = getFareClass(row);
+    if (fareClass && rowFareClass !== fareClass) return count;
+    return count + (seatsInRow - rowOccupied);
+  }, 0);
+
+  const classLabel = fareClass ? (fareClass === 'first_class' ? 'First Class' : fareClass.charAt(0).toUpperCase() + fareClass.slice(1)) : 'Total';
+  ctx.fillStyle = '#888888';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Reply with seat number to select (e.g. 14A)', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 8);
+  ctx.fillText(`${availableSeats} ${classLabel} seats available`, CANVAS_WIDTH / 2, legendY + 75);
+
+  // Footer
+  ctx.fillStyle = '#FF6600';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Reply with seat number to select (e.g. 14A)', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 12);
 
   return canvas.toBuffer('image/png') as unknown as Buffer;
 }
