@@ -7,13 +7,22 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { searchParams } = new URL(request.url);
     const highlight = searchParams.get('highlight') || undefined;
     const format = searchParams.get('format');
-    const fareClassParam = searchParams.get('fareClass') || searchParams.get('fare_class');
+    const fareClassParam = (searchParams.get('fareClass') || searchParams.get('fare_class') || '').toLowerCase();
     
-    // Validate fare class parameter
-    const validFareClasses = ['economy', 'business', 'first_class'];
-    const fareClass = fareClassParam && validFareClasses.includes(fareClassParam) 
-      ? fareClassParam as 'economy' | 'business' | 'first_class' 
-      : undefined;
+    // Normalize fare class parameter - accept multiple variations
+    const fareClassMap: Record<string, 'economy' | 'business' | 'first_class'> = {
+      'economy': 'economy',
+      'econ': 'economy',
+      'e': 'economy',
+      'business': 'business',
+      'biz': 'business',
+      'b': 'business',
+      'first_class': 'first_class',
+      'first': 'first_class',
+      'firstclass': 'first_class',
+      'f': 'first_class',
+    };
+    const fareClass = fareClassMap[fareClassParam] || undefined;
 
     const { data: flight } = await supabaseAdmin.from('flights').select('*').eq('id', params.id).single();
     if (!flight) return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
