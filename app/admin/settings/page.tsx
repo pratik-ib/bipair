@@ -4,7 +4,7 @@ import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-checkout.preview.emergentagent.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-tickets.preview.emergentagent.com';
 
 const ENDPOINTS = [
   { method:'GET', path:'/api/flights/search' },

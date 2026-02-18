@@ -138,7 +138,7 @@ export async function generateTicketPDF(pnr: string): Promise<Buffer> {
   }
 
   // QR Code
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-checkout.preview.emergentagent.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-tickets.preview.emergentagent.com';
   const qrData = await generateQRCodeImage(`${baseUrl}/api/bookings/${pnr}`);
   const qrImage = await pdfDoc.embedPng(qrData);
   page.drawImage(qrImage, { x: width / 2 - 70, y: height - 620, width: 140, height: 140 });
@@ -251,7 +251,7 @@ export async function generateBoardingPassPDF(pnr: string): Promise<Buffer> {
   page.drawText('BipAir', { x: rightCenterX - 20, y: height - 28, size: 14, font: boldFont, color: ORANGE });
 
   // QR code
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-checkout.preview.emergentagent.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-tickets.preview.emergentagent.com';
   const qrData = await generateQRCodeImage(`${baseUrl}/checkin/${pnr}`);
   const qrImage = await pdfDoc.embedPng(qrData);
   page.drawImage(qrImage, { x: rightCenterX - 60, y: height - 195, width: 120, height: 120 });
