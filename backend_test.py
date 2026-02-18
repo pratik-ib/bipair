@@ -804,6 +804,7 @@ class BipAirAPITester:
         print("\n2️⃣ Admin APIs (Session-based, NO API key required):")
         self.test_admin_stats_api()
         self.test_admin_flights_api()
+        self.test_admin_flights_create_api()
         self.test_admin_bookings_api()
         self.test_admin_passengers_api()
         self.test_admin_payments_api()
