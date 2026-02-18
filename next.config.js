@@ -1,5 +1,4 @@
 const nextConfig = {
-  output: 'standalone',
   images: {
     unoptimized: true,
   },
@@ -10,8 +9,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // Remove if not using Server Components
-    serverComponentsExternalPackages: ['mongodb', '@napi-rs/canvas', 'pdf-lib', 'qrcode'],
+    serverComponentsExternalPackages: ['@napi-rs/canvas', 'pdf-lib', 'qrcode'],
   },
   webpack(config, { dev, isServer }) {
     if (isServer) {
