@@ -233,6 +233,7 @@ Content-Type: application/json
 | fareClass | string | Yes | "economy", "business", or "first_class" |
 | seatNumber | string | No | Seat number (e.g., "12A") |
 | specialRequests | string | No | Special requests |
+| webhookUrl | string | No | URL to receive payment success webhook notification |
 
 **Example Request:**
 ```bash
@@ -250,7 +251,8 @@ curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/bookings" \
     "flightId": "123e4567-e89b-12d3-a456-426614174000",
     "fareClass": "economy",
     "seatNumber": "12A",
-    "specialRequests": "Vegetarian meal"
+    "specialRequests": "Vegetarian meal",
+    "webhookUrl": "https://your-server.com/webhooks/bipair"
   }'
 ```
 
@@ -265,6 +267,9 @@ curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/bookings" \
     "amount": 450,
     "currency": "USD",
     "checkoutUrl": "https://bipair-tickets.preview.emergentagent.com/checkout/payment-uuid-here",
+    "ticketUrl": "https://bipair-tickets.preview.emergentagent.com/api/ticket/BP7X2K",
+    "checkInUrl": "https://bipair-tickets.preview.emergentagent.com/checkin/BP7X2K",
+    "boardingPassUrl": "https://bipair-tickets.preview.emergentagent.com/api/boarding-pass/BP7X2K",
     "passenger": {
       "id": "passenger-uuid",
       "firstName": "John",
