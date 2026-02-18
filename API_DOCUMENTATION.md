@@ -804,22 +804,31 @@ x-api-key: bipair-demo-key-2026
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| fareClass | string | Filter by fare class: "economy", "business", or "first_class". Shows only selectable seats for that class. |
+| fareClass | string | Filter by fare class. Accepts: `economy`/`econ`/`e`, `business`/`biz`/`b`, `first_class`/`first`/`firstclass`/`f` |
 | highlight | string | Seat to highlight (e.g., "12A") |
 | format | string | "url" to get Supabase URL, omit for PNG stream |
 
 **Seat Map Features:**
-- ✅ Shows seat numbers on each seat (e.g., "14A")
+- ✅ Shows seat numbers on each seat (e.g., "5A")
 - ✅ Occupied seats shown with X mark and grayed out
 - ✅ When `fareClass` is provided, only that class seats are selectable (others dimmed)
-- ✅ Different colors for each class: Purple (First), Blue (Business), Green (Economy), Cyan (Extra Legroom)
+- ✅ Different colors: Purple (First), Blue (Business), Green (Economy), Cyan (Extra Legroom)
+- ✅ Dynamic layout based on flight's actual seat configuration
 - ✅ Shows available seat count for the selected class
-- ✅ Legend explaining all seat types
+- ✅ Compact width (420px) optimized for WhatsApp
 
 **Example Request (Economy class seats only):**
 ```bash
 curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?fareClass=economy&format=url" \
   -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Request (First class - multiple aliases work):**
+```bash
+# All these are equivalent:
+?fareClass=first_class
+?fareClass=first
+?fareClass=f
 ```
 
 **Example Request (All seats, PNG stream):**
