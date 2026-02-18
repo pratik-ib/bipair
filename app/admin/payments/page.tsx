@@ -5,7 +5,7 @@ import { StatusBadge } from '@/components/admin/status-badge';
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateTime, formatCurrency } from '@/lib/bipair-utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const PAGE_SIZE = 10;
 

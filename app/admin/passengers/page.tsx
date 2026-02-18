@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Eye, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate } from '@/lib/bipair-utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const PAGE_SIZE = 10;

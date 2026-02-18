@@ -12,7 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const STATUSES = ['scheduled','boarding','delayed','cancelled','departed','landed'];
 const PAGE_SIZE = 10;

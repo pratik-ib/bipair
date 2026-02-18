@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://bipair-checkout.preview.emergentagent.com';
 
