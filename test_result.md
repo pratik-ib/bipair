@@ -155,9 +155,9 @@ backend:
 
   - task: "Admin Bookings API"
     implemented: true
-    working: false
+    working: true
     file: "app/api/admin/bookings/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -167,6 +167,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: API returns 500 'Invalid API key' error. Same root cause as flights API - invalid Supabase service role key."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Admin bookings API now functional! Returns proper structure with bookings array and total count. Database connection resolved."
 
   - task: "Admin Passengers API"
     implemented: true
