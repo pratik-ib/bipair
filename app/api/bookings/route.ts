@@ -45,6 +45,24 @@ export async function POST(request: NextRequest) {
     const { data: flight } = await supabaseAdmin.from('flights').select('*').eq('id', flightId).single();
     if (!flight) return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
 
+    // Check if seat is already taken (only for non-cancelled bookings)
+    if (seatNumber) {
+      const { data: existingSeat } = await supabaseAdmin
+        .from('bookings')
+        .select('id, pnr')
+        .eq('flight_id', flightId)
+        .eq('seat_number', seatNumber)
+        .neq('status', 'cancelled')
+        .single();
+      
+      if (existingSeat) {
+        return NextResponse.json({ 
+          success: false, 
+          error: `Seat ${seatNumber} is already taken on this flight` 
+        }, { status: 409 });
+      }
+    }
+
     const priceMap: Record<string, number> = {
       economy: flight.economy_price,
       business: flight.business_price,
