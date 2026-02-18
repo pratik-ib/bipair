@@ -669,7 +669,7 @@ curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/payments/init
 
 ### 12. Process Payment
 
-Process the payment (mock - 90% success rate).
+Process the payment (mock - 90% success rate by default).
 
 **Endpoint:** `POST /api/payments/{id}/process`
 
@@ -686,6 +686,7 @@ Content-Type: application/json
 |-------|------|----------|-------------|
 | cardLastFour | string | Yes | Last 4 digits of card |
 | cardholderName | string | Yes | Name on card |
+| forceSuccess | boolean | No | Set to `true` to always succeed (useful for testing) |
 
 **Example Request:**
 ```bash
@@ -693,11 +694,12 @@ curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/payments/paym
   -H "Content-Type: application/json" \
   -d '{
     "cardLastFour": "4242",
-    "cardholderName": "John Doe"
+    "cardholderName": "John Doe",
+    "forceSuccess": true
   }'
 ```
 
-**Success Response (90% probability):**
+**Success Response (90% probability, or 100% if forceSuccess=true):**
 ```json
 {
   "success": true,
