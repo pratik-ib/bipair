@@ -6,24 +6,41 @@ import fs from 'fs';
 // Register fonts for Vercel serverless environment
 function registerFonts() {
   try {
-    // Use fontsource inter package which is bundled with node_modules
-    const interPath = path.join(
-      process.cwd(), 
-      'node_modules/@fontsource/inter/files'
-    );
+    // Try public/fonts directory first (TTF files)
+    const publicFontsPath = path.join(process.cwd(), 'public/fonts');
+    const regularTTF = path.join(publicFontsPath, 'Inter-Regular.ttf');
+    const boldTTF = path.join(publicFontsPath, 'Inter-Bold.ttf');
     
-    const regularFontPath = path.join(interPath, 'inter-latin-400-normal.woff2');
-    const boldFontPath = path.join(interPath, 'inter-latin-700-normal.woff2');
+    if (fs.existsSync(regularTTF)) {
+      GlobalFonts.registerFromPath(regularTTF, 'Inter');
+      console.log('[Fonts] Registered Inter-Regular.ttf');
+    }
+    if (fs.existsSync(boldTTF)) {
+      GlobalFonts.registerFromPath(boldTTF, 'InterBold');
+      console.log('[Fonts] Registered Inter-Bold.ttf');
+    }
     
-    if (fs.existsSync(regularFontPath)) {
-      GlobalFonts.registerFromPath(regularFontPath, 'Inter');
+    // Fallback to @fontsource/inter if TTF not found
+    if (!fs.existsSync(regularTTF)) {
+      const interPath = path.join(process.cwd(), 'node_modules/@fontsource/inter/files');
+      const regularWoff = path.join(interPath, 'inter-latin-400-normal.woff2');
+      const boldWoff = path.join(interPath, 'inter-latin-700-normal.woff2');
+      
+      if (fs.existsSync(regularWoff)) {
+        GlobalFonts.registerFromPath(regularWoff, 'Inter');
+        console.log('[Fonts] Registered inter-latin-400-normal.woff2');
+      }
+      if (fs.existsSync(boldWoff)) {
+        GlobalFonts.registerFromPath(boldWoff, 'InterBold');
+        console.log('[Fonts] Registered inter-latin-700-normal.woff2');
+      }
     }
-    if (fs.existsSync(boldFontPath)) {
-      GlobalFonts.registerFromPath(boldFontPath, 'InterBold');
-    }
+    
+    // Log registered fonts for debugging
+    const families = GlobalFonts.families;
+    console.log('[Fonts] Available font families:', families);
   } catch (err) {
-    console.error('Font registration failed:', err);
-    // Fallback silently - canvas will use default font
+    console.error('[Fonts] Registration failed:', err);
   }
 }
 
