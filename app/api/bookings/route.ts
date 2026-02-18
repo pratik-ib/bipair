@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
     const {
       passengerPhone, firstName, lastName, email,
       passportNumber, nationality, dateOfBirth,
-      flightId, fareClass, seatNumber, specialRequests
+      flightId, fareClass, seatNumber, specialRequests,
+      webhookUrl, // NEW: Optional webhook URL for payment notifications
     } = body;
 
     // Get or create passenger
@@ -70,12 +71,19 @@ export async function POST(request: NextRequest) {
     }).select().single();
     if (bErr) throw bErr;
 
-    // Create payment record
-    const { data: payment, error: payErr } = await supabaseAdmin.from('payments').insert({
+    // Create payment record with optional webhook_url
+    const paymentData: any = {
       booking_id: booking.id,
       amount, currency: 'USD',
       status: 'pending', payment_method: 'card',
-    }).select().single();
+    };
+    
+    // Save webhook URL if provided
+    if (webhookUrl) {
+      paymentData.webhook_url = webhookUrl;
+    }
+
+    const { data: payment, error: payErr } = await supabaseAdmin.from('payments').insert(paymentData).select().single();
     if (payErr) throw payErr;
 
     // Update booking with payment_id
@@ -91,10 +99,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        pnr, bookingId: booking.id, paymentId: payment.id,
-        amount, currency: 'USD',
+        pnr, 
+        bookingId: booking.id, 
+        paymentId: payment.id,
+        amount, 
+        currency: 'USD',
         checkoutUrl: `${baseUrl}/checkout/${payment.id}`,
-        passenger: { id: passenger.id, firstName: passenger.first_name, lastName: passenger.last_name, loyaltyPoints: passenger.loyalty_points + points },
+        ticketUrl: `${baseUrl}/api/ticket/${pnr}`,
+        checkInUrl: `${baseUrl}/checkin/${pnr}`,
+        boardingPassUrl: `${baseUrl}/api/boarding-pass/${pnr}`,
+        passenger: { 
+          id: passenger.id, 
+          firstName: passenger.first_name, 
+          lastName: passenger.last_name, 
+          loyaltyPoints: passenger.loyalty_points + points 
+        },
       },
     });
   } catch (error: any) {
