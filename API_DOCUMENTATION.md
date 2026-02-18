@@ -791,7 +791,7 @@ curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/notifications
 
 ### 15. Seat Map Image
 
-Generate a seat map image for a flight.
+Generate a seat map image for a flight with fare class filtering.
 
 **Endpoint:** `GET /api/flights/{id}/seat-map-image`
 
@@ -804,10 +804,25 @@ x-api-key: bipair-demo-key-2026
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| fareClass | string | Filter by fare class: "economy", "business", or "first_class". Shows only selectable seats for that class. |
 | highlight | string | Seat to highlight (e.g., "12A") |
 | format | string | "url" to get Supabase URL, omit for PNG stream |
 
-**Example Request (PNG stream):**
+**Seat Map Features:**
+- ✅ Shows seat numbers on each seat (e.g., "14A")
+- ✅ Occupied seats shown with X mark and grayed out
+- ✅ When `fareClass` is provided, only that class seats are selectable (others dimmed)
+- ✅ Different colors for each class: Purple (First), Blue (Business), Green (Economy), Cyan (Extra Legroom)
+- ✅ Shows available seat count for the selected class
+- ✅ Legend explaining all seat types
+
+**Example Request (Economy class seats only):**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?fareClass=economy&format=url" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Request (All seats, PNG stream):**
 ```bash
 curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?highlight=12A" \
   -H "x-api-key: bipair-demo-key-2026" \
@@ -818,7 +833,7 @@ curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight
 
 **Example Request (URL):**
 ```bash
-curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?format=url" \
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?format=url&fareClass=business" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -836,7 +851,7 @@ curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight
 
 ### 16. Check-in Seat Map
 
-Generate seat map for check-in with booking seat highlighted.
+Generate seat map for check-in. **Automatically uses the booking's fare class** to show only selectable seats.
 
 **Endpoint:** `GET /api/checkin/{pnr}/seat-map-image`
 
@@ -844,13 +859,15 @@ Generate seat map for check-in with booking seat highlighted.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| highlight | string | Override highlight seat |
+| highlight | string | Override highlight seat (default: booking's current seat) |
 | format | string | "url" for Supabase URL |
+
+> 💡 **Note:** The check-in seat map automatically filters seats based on the passenger's booked fare class. Economy passengers can only select economy seats, business passengers can only select business seats, etc.
 
 **Example:**
 ```bash
-curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image" \
-  --output checkin-seat-map.png
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image?format=url" \
+  -H "x-api-key: bipair-demo-key-2026"
 ```
 
 ---
