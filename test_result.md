@@ -137,9 +137,9 @@ backend:
 
   - task: "Admin Flights CRUD API"
     implemented: true
-    working: false
+    working: true
     file: "app/api/admin/flights/route.ts, app/api/admin/flights/[id]/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -149,6 +149,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: API returns 500 'Invalid API key' error. Root cause: Supabase service role key in .env is invalid (ysb_secret_... should be sb_secret_...). All Supabase-dependent APIs failing."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Supabase connection now working! GET /api/admin/flights returns proper JSON structure with flights array and total count. Paginated queries work correctly. Core flight management functionality operational."
 
   - task: "Admin Bookings API"
     implemented: true
