@@ -460,3 +460,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Built full BipAir system: admin panel (login, dashboard, flights, bookings, passengers, payments, notifications, settings), chatbot REST APIs (flights search, bookings CRUD, checkin, payments, passengers, notifications), seat map image generation with @napi-rs/canvas, PDF generation with pdf-lib, customer pages (checkout, checkin confirmation). Auth: iron-session v8. DB: Supabase with service role key. Test admin login with: username=admin, password=Infobip@123. For chatbot APIs use header: x-api-key: bipair-demo-key-2026. App URL: https://bipair-checkout.preview.emergentagent.com. Backend URL base: http://localhost:3000"
+  - agent: "testing"
+    message: "TESTING COMPLETE: Found critical issue - Supabase service role key in .env is invalid (starts with 'ysb_' instead of 'sb_'). This causes all database-dependent APIs to fail with 'Invalid API key' error. APIs without DB access work correctly (auth, API key validation, error handling). Need to fix Supabase credentials to enable full functionality."
