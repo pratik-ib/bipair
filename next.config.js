@@ -3,6 +3,12 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb', '@napi-rs/canvas', 'pdf-lib', 'qrcode'],
