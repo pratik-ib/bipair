@@ -687,53 +687,51 @@ class BipAirAPITester:
             )
             return False
     def run_all_tests(self):
-        """Run all priority tests"""
-        print("🚀 Starting BipAir Backend API Tests...")
+        """Run all comprehensive backend API tests"""
+        print("🚀 Starting COMPREHENSIVE BipAir Backend API Tests...")
         print(f"Testing against: {self.base_url}")
-        print("=" * 60)
+        print("📋 TESTING ALL ENDPOINTS AS REQUESTED")
+        print("=" * 80)
         
-        # HIGH PRIORITY TESTS (as specified in the request)
-        print("\n📋 HIGH PRIORITY TESTS:")
-        
-        # 1. Admin Auth
-        print("\n1️⃣ Admin Authentication:")
+        # 1. AUTHENTICATION APIS
+        print("\n1️⃣ Authentication APIs (Session-based, NO API key):")
         self.test_admin_auth_correct_credentials()
         self.test_admin_auth_wrong_credentials()
+        self.test_admin_logout_api()
         
-        # 2. Admin Stats
-        print("\n2️⃣ Admin Stats:")
+        # 2. ADMIN APIS (Session-based, NO API key required)
+        print("\n2️⃣ Admin APIs (Session-based, NO API key required):")
         self.test_admin_stats_api()
-        
-        # 3. Admin Flights
-        print("\n3️⃣ Admin Flights:")
         self.test_admin_flights_api()
-        
-        # 4. Admin Bookings
-        print("\n4️⃣ Admin Bookings:")
         self.test_admin_bookings_api()
+        self.test_admin_passengers_api()
+        self.test_admin_payments_api()
+        self.test_admin_notifications_api()
         
-        # 5. Chatbot Flights Search
-        print("\n5️⃣ Chatbot Flights Search:")
+        # 3. CHATBOT APIS (REQUIRE x-api-key: bipair-demo-key-2026)
+        print("\n3️⃣ Chatbot APIs (REQUIRE x-api-key header):")
         self.test_chatbot_flights_search_with_api_key()
         self.test_chatbot_flights_search_without_api_key()
-        
-        # 6. Chatbot Bookings
-        print("\n6️⃣ Chatbot Bookings:")
+        self.test_flight_details_api()
+        self.test_seat_map_image_api()
         self.test_chatbot_bookings_api()
-        
-        # 7. Payments
-        print("\n7️⃣ Payments:")
-        self.test_payments_status_api()
-        self.test_payments_initiate_api()
-        
-        # 8. Passengers
-        print("\n8️⃣ Passengers:")
         self.test_passengers_api_get()
         self.test_passengers_api_post()
+        self.test_checkin_api()
+        self.test_checkin_seat_map_image_api()
+        self.test_payments_initiate_api()
+        self.test_payments_process_api()
+        self.test_payments_status_api()
+        self.test_notifications_send_api()
         
-        # Print summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY:")
+        # 4. PDF GENERATION APIS (NO API key)
+        print("\n4️⃣ PDF Generation APIs (NO API key):")
+        self.test_pdf_ticket_api()
+        self.test_pdf_boarding_pass_api()
+        
+        # Print detailed summary
+        print("\n" + "=" * 80)
+        print("📊 COMPREHENSIVE TEST SUMMARY:")
         print(f"Total Tests: {self.results['total']}")
         print(f"✅ Passed: {self.results['passed']}")
         print(f"❌ Failed: {self.results['failed']}")
@@ -744,8 +742,25 @@ class BipAirAPITester:
                 if test['status'] == 'FAIL':
                     print(f"   • {test['name']}: {test['details']}")
         
+        if self.results['passed'] > 0:
+            print("\n✅ PASSED TESTS:")
+            for test in self.results['tests']:
+                if test['status'] == 'PASS':
+                    print(f"   • {test['name']}")
+        
         success_rate = (self.results['passed'] / self.results['total']) * 100 if self.results['total'] > 0 else 0
         print(f"\n🎯 Success Rate: {success_rate:.1f}%")
+        
+        # Critical analysis
+        print(f"\n🔍 CRITICAL ANALYSIS:")
+        if success_rate >= 90:
+            print("   🟢 EXCELLENT: All core systems functional")
+        elif success_rate >= 70:
+            print("   🟡 GOOD: Minor issues, core functionality works")
+        elif success_rate >= 50:
+            print("   🟠 PARTIAL: Some core systems failing, needs attention")
+        else:
+            print("   🔴 CRITICAL: Major system failures, immediate fix needed")
         
         return self.results
 
