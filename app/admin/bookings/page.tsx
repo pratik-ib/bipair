@@ -82,20 +82,21 @@ export default function BookingsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-800">
-                {['PNR','Passenger','Flight No','Route','Fare','Seat','Status','Payment','Amount','Source','Date','Actions'].map(h=>(
+                {['PNR','Passenger','Flight No','Route','Travel Date','Fare','Seat','Status','Payment','Amount','Source','Booked On','Actions'].map(h=>(
                   <th key={h} className="px-3 py-3 text-left text-gray-400 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? Array(5).fill(0).map((_,i)=>(
-                <tr key={i}><td colSpan={12} className="px-3 py-4"><div className="h-4 bg-gray-800 rounded animate-pulse" /></td></tr>
+                <tr key={i}><td colSpan={13} className="px-3 py-4"><div className="h-4 bg-gray-800 rounded animate-pulse" /></td></tr>
               )) : bookings.map(b=>(
                 <tr key={b.id} className="border-b border-gray-800/50 hover:bg-gray-800/30">
                   <td className="px-3 py-3 text-orange-400 font-mono font-bold text-sm">{b.pnr}</td>
                   <td className="px-3 py-3 text-white text-sm whitespace-nowrap">{b.passenger?.first_name} {b.passenger?.last_name}</td>
                   <td className="px-3 py-3 text-gray-300 text-sm">{b.flight?.flight_number}</td>
                   <td className="px-3 py-3 text-gray-300 text-xs whitespace-nowrap">{b.flight?.origin}→{b.flight?.destination}</td>
+                  <td className="px-3 py-3 text-white text-sm whitespace-nowrap">{b.flight?.departure_time ? formatDateTime(b.flight.departure_time) : '-'}</td>
                   <td className="px-3 py-3 text-gray-400 text-xs capitalize">{b.fare_class?.replace('_',' ')}</td>
                   <td className="px-3 py-3 text-gray-300 text-sm">{b.seat_number||'-'}</td>
                   <td className="px-3 py-3"><StatusBadge status={b.status} /></td>
