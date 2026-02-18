@@ -1,0 +1,1074 @@
+# BipAir API Documentation
+
+> **Version:** 1.0  
+> **Base URL:** `https://bipair-tickets.preview.emergentagent.com`  
+> **Last Updated:** June 2025
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Authentication](#authentication)
+3. [Chatbot APIs](#chatbot-apis)
+   - [Flight Search](#1-flight-search)
+   - [Flight Details](#2-flight-details)
+   - [Create Booking](#3-create-booking)
+   - [Get Booking](#4-get-booking)
+   - [Update Booking](#5-update-booking)
+   - [Cancel Booking](#6-cancel-booking)
+   - [Create/Get Passenger](#7-createget-passenger)
+   - [Get Passenger Profile](#8-get-passenger-profile)
+   - [Check-in Status](#9-check-in-status)
+   - [Complete Check-in](#10-complete-check-in)
+   - [Initiate Payment](#11-initiate-payment)
+   - [Process Payment](#12-process-payment)
+   - [Get Payment Status](#13-get-payment-status)
+   - [Send Notification](#14-send-notification)
+4. [Media Generation APIs](#media-generation-apis)
+   - [Seat Map Image](#15-seat-map-image)
+   - [Check-in Seat Map](#16-check-in-seat-map)
+   - [E-Ticket PDF](#17-e-ticket-pdf)
+   - [Boarding Pass PDF](#18-boarding-pass-pdf)
+5. [Admin APIs](#admin-apis)
+6. [Error Handling](#error-handling)
+7. [Data Types](#data-types)
+8. [Complete Flow Example](#complete-flow-example)
+
+---
+
+## Overview
+
+BipAir is a mock airline management system providing REST APIs for WhatsApp chatbot integration. The system supports:
+
+- ✈️ Flight search and booking
+- 👤 Passenger management
+- 💳 Payment processing (mock)
+- ✅ Online check-in
+- 🎫 E-ticket and boarding pass generation
+- 🖼️ Dynamic seat map images
+
+### Response Format
+
+All API responses follow this structure:
+
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+Or on error:
+
+```json
+{
+  "success": false,
+  "error": "Error message"
+}
+```
+
+---
+
+## Authentication
+
+### API Key Authentication (Chatbot APIs)
+
+All chatbot-facing APIs require the `x-api-key` header:
+
+```
+x-api-key: bipair-demo-key-2026
+```
+
+### Admin Authentication
+
+Admin APIs use cookie-based session authentication via `iron-session`. First call the login endpoint, then include cookies in subsequent requests.
+
+---
+
+## Chatbot APIs
+
+### 1. Flight Search
+
+Search for available flights by origin, destination, and date.
+
+**Endpoint:** `GET /api/flights/search`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| origin | string | No | Airport code (e.g., "DAR", "LHR") |
+| destination | string | No | Airport code |
+| date | string | No | Date in YYYY-MM-DD format |
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/search?origin=DAR&destination=LHR&date=2025-06-15" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid-here",
+      "flightNumber": "BP101",
+      "origin": "DAR",
+      "originCity": "Dar es Salaam",
+      "destination": "LHR",
+      "destinationCity": "London",
+      "departureTime": "2025-06-15T08:00:00Z",
+      "arrivalTime": "2025-06-15T16:30:00Z",
+      "durationMinutes": 510,
+      "status": "scheduled",
+      "gate": "A12",
+      "terminal": "T1",
+      "availableSeats": {
+        "economy": 120,
+        "business": 24,
+        "firstClass": 8
+      },
+      "prices": {
+        "economy": 450,
+        "business": 1200,
+        "firstClass": 2500
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 2. Flight Details
+
+Get detailed information about a specific flight.
+
+**Endpoint:** `GET /api/flights/{id}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | uuid | Flight ID |
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/123e4567-e89b-12d3-a456-426614174000" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "flight_number": "BP101",
+    "origin": "DAR",
+    "origin_city": "Dar es Salaam",
+    "destination": "LHR",
+    "destination_city": "London",
+    "departure_time": "2025-06-15T08:00:00Z",
+    "arrival_time": "2025-06-15T16:30:00Z",
+    "aircraft_type": "Boeing 787",
+    "status": "scheduled",
+    "gate": "A12",
+    "terminal": "T1",
+    "economy_seats": 150,
+    "business_seats": 30,
+    "first_class_seats": 12,
+    "economy_price": 450,
+    "business_price": 1200,
+    "first_class_price": 2500,
+    "durationMinutes": 510,
+    "availableSeats": {
+      "economy": 120,
+      "business": 24,
+      "firstClass": 8
+    }
+  }
+}
+```
+
+---
+
+### 3. Create Booking
+
+Create a new booking for a passenger on a flight.
+
+**Endpoint:** `POST /api/bookings`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+Content-Type: application/json
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| passengerPhone | string | Yes | Phone number (unique identifier) |
+| firstName | string | Yes* | First name (*required if new passenger) |
+| lastName | string | Yes* | Last name |
+| email | string | No | Email address |
+| passportNumber | string | No | Passport number |
+| nationality | string | No | Nationality |
+| dateOfBirth | string | No | Date of birth (YYYY-MM-DD) |
+| flightId | uuid | Yes | Flight ID |
+| fareClass | string | Yes | "economy", "business", or "first_class" |
+| seatNumber | string | No | Seat number (e.g., "12A") |
+| specialRequests | string | No | Special requests |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/bookings" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "passengerPhone": "+255712345678",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@email.com",
+    "passportNumber": "AB1234567",
+    "nationality": "Tanzanian",
+    "dateOfBirth": "1990-05-15",
+    "flightId": "123e4567-e89b-12d3-a456-426614174000",
+    "fareClass": "economy",
+    "seatNumber": "12A",
+    "specialRequests": "Vegetarian meal"
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "pnr": "BP7X2K",
+    "bookingId": "booking-uuid-here",
+    "paymentId": "payment-uuid-here",
+    "amount": 450,
+    "currency": "USD",
+    "checkoutUrl": "https://bipair-tickets.preview.emergentagent.com/checkout/payment-uuid-here",
+    "passenger": {
+      "id": "passenger-uuid",
+      "firstName": "John",
+      "lastName": "Doe",
+      "loyaltyPoints": 100
+    }
+  }
+}
+```
+
+---
+
+### 4. Get Booking
+
+Retrieve booking details by PNR.
+
+**Endpoint:** `GET /api/bookings/{pnr}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| pnr | string | 6-character booking reference |
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/bookings/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "booking-uuid",
+    "pnr": "BP7X2K",
+    "passenger_id": "passenger-uuid",
+    "flight_id": "flight-uuid",
+    "seat_number": "12A",
+    "fare_class": "economy",
+    "status": "confirmed",
+    "payment_status": "paid",
+    "total_amount": 450,
+    "booking_source": "whatsapp",
+    "special_requests": "Vegetarian meal",
+    "created_at": "2025-06-10T14:30:00Z",
+    "passenger": {
+      "id": "passenger-uuid",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john.doe@email.com",
+      "phone": "+255712345678",
+      "passport_number": "AB1234567",
+      "loyalty_points": 100
+    },
+    "flight": {
+      "id": "flight-uuid",
+      "flight_number": "BP101",
+      "origin": "DAR",
+      "destination": "LHR",
+      "departure_time": "2025-06-15T08:00:00Z",
+      "arrival_time": "2025-06-15T16:30:00Z",
+      "gate": "A12",
+      "terminal": "T1"
+    },
+    "payment": {
+      "id": "payment-uuid",
+      "amount": 450,
+      "currency": "USD",
+      "status": "success"
+    }
+  }
+}
+```
+
+---
+
+### 5. Update Booking
+
+Update booking details (status, seat, special requests).
+
+**Endpoint:** `PATCH /api/bookings/{pnr}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+Content-Type: application/json
+```
+
+**Request Body (all optional):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| status | string | "pending", "confirmed", "checked_in", "cancelled" |
+| seat_number | string | New seat number |
+| special_requests | string | Updated requests |
+| payment_status | string | "pending", "paid", "failed", "refunded" |
+
+**Example Request:**
+```bash
+curl -X PATCH "https://bipair-tickets.preview.emergentagent.com/api/bookings/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "seat_number": "14B",
+    "special_requests": "Window seat preferred"
+  }'
+```
+
+---
+
+### 6. Cancel Booking
+
+Cancel a booking and process refund if paid.
+
+**Endpoint:** `DELETE /api/bookings/{pnr}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Example Request:**
+```bash
+curl -X DELETE "https://bipair-tickets.preview.emergentagent.com/api/bookings/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "refunded": true
+  }
+}
+```
+
+---
+
+### 7. Create/Get Passenger
+
+Create a new passenger or get existing by phone number.
+
+**Endpoint:** `POST /api/passengers`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+Content-Type: application/json
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| phone | string | Yes | Phone number (unique) |
+| firstName | string | Yes* | First name (*if creating new) |
+| lastName | string | Yes* | Last name |
+| email | string | No | Email address |
+| passportNumber | string | No | Passport number |
+| nationality | string | No | Nationality |
+| dateOfBirth | string | No | Date of birth |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/passengers" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone": "+255712345678",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@email.com"
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "passenger": {
+      "id": "passenger-uuid",
+      "phone": "+255712345678",
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@email.com",
+      "loyalty_points": 0
+    },
+    "isNew": true
+  }
+}
+```
+
+---
+
+### 8. Get Passenger Profile
+
+Get passenger details and booking history by phone.
+
+**Endpoint:** `GET /api/passengers/{phone}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| phone | string | URL-encoded phone number |
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/passengers/%2B255712345678" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "passenger": {
+      "id": "uuid",
+      "first_name": "John",
+      "last_name": "Doe",
+      "phone": "+255712345678",
+      "email": "john@email.com",
+      "loyalty_points": 350
+    },
+    "bookings": [
+      {
+        "id": "booking-uuid",
+        "pnr": "BP7X2K",
+        "status": "confirmed",
+        "flight": {
+          "flight_number": "BP101",
+          "origin": "DAR",
+          "destination": "LHR"
+        }
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 9. Check-in Status
+
+Get check-in eligibility and current status.
+
+**Endpoint:** `GET /api/checkin/{pnr}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "canCheckin": true,
+    "reason": null,
+    "currentSeat": "12A",
+    "checkinStatus": "confirmed",
+    "seatMapImageUrl": "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image",
+    "flight": {
+      "flightNumber": "BP101",
+      "origin": "DAR",
+      "destination": "LHR",
+      "departureTime": "2025-06-15T08:00:00Z",
+      "gate": "A12",
+      "terminal": "T1"
+    }
+  }
+}
+```
+
+**Possible `reason` values when `canCheckin` is false:**
+- `"Already checked in"`
+- `"Booking is cancelled"`
+- `"Payment not completed"`
+
+---
+
+### 10. Complete Check-in
+
+Complete check-in with seat selection.
+
+**Endpoint:** `POST /api/checkin/{pnr}`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+Content-Type: application/json
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| seatNumber | string | Yes | Selected seat (e.g., "14A") |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{"seatNumber": "14A"}'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Check-in successful",
+    "seatNumber": "14A",
+    "boardingPassUrl": "https://bipair-tickets.preview.emergentagent.com/api/boarding-pass/BP7X2K",
+    "confirmationPageUrl": "https://bipair-tickets.preview.emergentagent.com/checkin/BP7X2K",
+    "seatMapImageUrl": "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image"
+  }
+}
+```
+
+**Error Response (seat occupied):**
+```json
+{
+  "success": false,
+  "error": "Seat already occupied"
+}
+```
+
+---
+
+### 11. Initiate Payment
+
+Get or create payment for a booking.
+
+**Endpoint:** `POST /api/payments/initiate`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+Content-Type: application/json
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| pnr | string | Yes | Booking reference |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/payments/initiate" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{"pnr": "BP7X2K"}'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "paymentId": "payment-uuid",
+    "amount": 450,
+    "currency": "USD",
+    "checkoutUrl": "https://bipair-tickets.preview.emergentagent.com/checkout/payment-uuid",
+    "bookingStatus": "pending",
+    "paymentStatus": "pending"
+  }
+}
+```
+
+---
+
+### 12. Process Payment
+
+Process the payment (mock - 90% success rate).
+
+**Endpoint:** `POST /api/payments/{id}/process`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+> ⚠️ **Note:** This endpoint does NOT require API key (called from checkout page)
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| cardLastFour | string | Yes | Last 4 digits of card |
+| cardholderName | string | Yes | Name on card |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/payments/payment-uuid/process" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cardLastFour": "4242",
+    "cardholderName": "John Doe"
+  }'
+```
+
+**Success Response (90% probability):**
+```json
+{
+  "success": true,
+  "data": {
+    "status": "success",
+    "transactionRef": "TXN-ABC123XYZ"
+  }
+}
+```
+
+**Failure Response (10% probability):**
+```json
+{
+  "success": false,
+  "data": {
+    "status": "failed",
+    "transactionRef": null
+  }
+}
+```
+
+---
+
+### 13. Get Payment Status
+
+Check payment status.
+
+**Endpoint:** `GET /api/payments/{id}`
+
+> ⚠️ **Note:** This endpoint does NOT require API key
+
+**Example Request:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/payments/payment-uuid"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "payment-uuid",
+    "status": "success",
+    "amount": 450,
+    "currency": "USD",
+    "transactionRef": "TXN-ABC123XYZ",
+    "createdAt": "2025-06-10T14:30:00Z"
+  }
+}
+```
+
+---
+
+### 14. Send Notification
+
+Log a notification to the system.
+
+**Endpoint:** `POST /api/notifications/send`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| passengerId | uuid | Yes | Passenger ID |
+| message | string | Yes | Notification message |
+| bookingId | uuid | No | Related booking ID |
+
+**Example Request:**
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/notifications/send" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "passengerId": "passenger-uuid",
+    "message": "Your flight BP101 is now boarding at Gate A12",
+    "bookingId": "booking-uuid"
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "notificationId": "notification-uuid"
+  }
+}
+```
+
+---
+
+## Media Generation APIs
+
+### 15. Seat Map Image
+
+Generate a seat map image for a flight.
+
+**Endpoint:** `GET /api/flights/{id}/seat-map-image`
+
+**Headers:**
+```
+x-api-key: bipair-demo-key-2026
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| highlight | string | Seat to highlight (e.g., "12A") |
+| format | string | "url" to get Supabase URL, omit for PNG stream |
+
+**Example Request (PNG stream):**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?highlight=12A" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  --output seat-map.png
+```
+
+**Response:** PNG image stream
+
+**Example Request (URL):**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?format=url" \
+  -H "x-api-key: bipair-demo-key-2026"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "imageUrl": "https://supabase-storage-url/seat-maps/flight-xxx.png"
+  }
+}
+```
+
+---
+
+### 16. Check-in Seat Map
+
+Generate seat map for check-in with booking seat highlighted.
+
+**Endpoint:** `GET /api/checkin/{pnr}/seat-map-image`
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| highlight | string | Override highlight seat |
+| format | string | "url" for Supabase URL |
+
+**Example:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image" \
+  --output checkin-seat-map.png
+```
+
+---
+
+### 17. E-Ticket PDF
+
+Download e-ticket PDF for a booking.
+
+**Endpoint:** `GET /api/ticket/{pnr}`
+
+> ⚠️ **Note:** No API key required
+
+**Example:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/ticket/BP7X2K" \
+  --output ticket-BP7X2K.pdf
+```
+
+**Response:** PDF file download
+
+---
+
+### 18. Boarding Pass PDF
+
+Download boarding pass PDF (requires checked-in status).
+
+**Endpoint:** `GET /api/boarding-pass/{pnr}`
+
+> ⚠️ **Note:** No API key required
+
+**Example:**
+```bash
+curl -X GET "https://bipair-tickets.preview.emergentagent.com/api/boarding-pass/BP7X2K" \
+  --output boarding-pass-BP7X2K.pdf
+```
+
+**Response:** PDF file download
+
+**Error (not checked in):**
+```json
+{
+  "success": false,
+  "error": "Passenger has not completed check-in"
+}
+```
+
+---
+
+## Admin APIs
+
+These APIs are for the admin panel and require session-based authentication.
+
+### Admin Login
+
+**Endpoint:** `POST /api/auth/login`
+
+```bash
+curl -X POST "https://bipair-tickets.preview.emergentagent.com/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "Infobip@123"}'
+```
+
+### Admin Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/admin/stats | Dashboard statistics |
+| GET | /api/admin/flights | List flights (paginated) |
+| POST | /api/admin/flights | Create flight |
+| PATCH | /api/admin/flights/{id} | Update flight |
+| DELETE | /api/admin/flights/{id} | Delete flight |
+| GET | /api/admin/bookings | List bookings (paginated) |
+| GET | /api/admin/passengers | List passengers |
+| GET | /api/admin/passengers/{id} | Passenger details |
+| PATCH | /api/admin/passengers/{id} | Update passenger |
+| GET | /api/admin/payments | List payments |
+| POST | /api/admin/payments/{id}/refund | Process refund |
+| GET | /api/admin/notifications | List notifications |
+
+---
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Meaning |
+|------|---------|
+| 200 | Success |
+| 400 | Bad Request (invalid input) |
+| 401 | Unauthorized (invalid/missing API key) |
+| 404 | Not Found (resource doesn't exist) |
+| 409 | Conflict (e.g., seat already occupied) |
+| 500 | Server Error |
+
+### Common Error Responses
+
+**Unauthorized:**
+```json
+{
+  "success": false,
+  "error": "Unauthorized"
+}
+```
+
+**Not Found:**
+```json
+{
+  "success": false,
+  "error": "Booking not found"
+}
+```
+
+**Validation Error:**
+```json
+{
+  "success": false,
+  "error": "Flight not found"
+}
+```
+
+---
+
+## Data Types
+
+### Fare Classes
+- `economy`
+- `business`
+- `first_class`
+
+### Booking Status
+- `pending` - Initial state
+- `confirmed` - Payment completed
+- `checked_in` - Check-in completed
+- `cancelled` - Booking cancelled
+
+### Payment Status
+- `pending` - Awaiting payment
+- `paid` - Payment successful
+- `failed` - Payment failed
+- `refunded` - Payment refunded
+
+### Flight Status
+- `scheduled`
+- `boarding`
+- `departed`
+- `arrived`
+- `delayed`
+- `cancelled`
+
+---
+
+## Complete Flow Example
+
+Here's a typical booking flow:
+
+### 1. Search Flights
+```bash
+GET /api/flights/search?origin=DAR&destination=LHR&date=2025-06-15
+```
+
+### 2. Create Booking
+```bash
+POST /api/bookings
+{
+  "passengerPhone": "+255712345678",
+  "firstName": "John",
+  "lastName": "Doe",
+  "flightId": "flight-uuid",
+  "fareClass": "economy",
+  "seatNumber": "12A"
+}
+# Returns: pnr, paymentId, checkoutUrl
+```
+
+### 3. Redirect to Payment
+```
+User visits: checkoutUrl
+```
+
+### 4. Process Payment
+```bash
+POST /api/payments/{paymentId}/process
+{
+  "cardLastFour": "4242",
+  "cardholderName": "John Doe"
+}
+```
+
+### 5. Check Payment Status (optional)
+```bash
+GET /api/payments/{paymentId}
+```
+
+### 6. Get Check-in Status (before flight)
+```bash
+GET /api/checkin/{pnr}
+```
+
+### 7. Complete Check-in
+```bash
+POST /api/checkin/{pnr}
+{
+  "seatNumber": "14A"
+}
+# Returns: boardingPassUrl
+```
+
+### 8. Download Documents
+```bash
+GET /api/ticket/{pnr}        # E-Ticket PDF
+GET /api/boarding-pass/{pnr} # Boarding Pass PDF
+```
+
+---
+
+## Support
+
+For API issues or questions, contact the development team.
+
+**API Version:** 1.0  
+**Last Updated:** June 2025
