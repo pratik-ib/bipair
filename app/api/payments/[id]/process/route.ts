@@ -36,9 +36,15 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           payment_status: 'paid' 
         }).eq('id', booking.id);
 
-        // Fire webhook if configured (non-blocking)
+        // Fire webhook if configured (non-blocking but awaited to ensure execution)
         if (payment.webhook_url) {
-          fireWebhook(payment, booking, transactionRef);
+          console.log(`[Webhook] Triggering webhook for PNR ${booking.pnr} to ${payment.webhook_url}`);
+          // Fire and forget - don't await but ensure it starts
+          fireWebhook(payment, booking, transactionRef).catch(err => {
+            console.error('[Webhook] Background execution error:', err);
+          });
+        } else {
+          console.log(`[Webhook] No webhook URL configured for payment ${payment.id}`);
         }
       }
       
