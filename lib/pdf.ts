@@ -105,7 +105,7 @@ export async function generateTicketPDF(pnr: string): Promise<Buffer> {
   if (flight) {
     page.drawRectangle({ x: 0, y: height - 315, width, height: 90, color: DARK });
     page.drawText(flight.origin, { x: 40, y: height - 270, size: 36, font: boldFont, color: WHITE });
-    page.drawText('→', { x: width / 2 - 15, y: height - 270, size: 28, font: boldFont, color: ORANGE });
+    page.drawText('->', { x: width / 2 - 15, y: height - 270, size: 28, font: boldFont, color: ORANGE });
     page.drawText(flight.destination, { x: width - 120, y: height - 270, size: 36, font: boldFont, color: WHITE });
     page.drawText(flight.origin_city, { x: 40, y: height - 292, size: 12, font: regularFont, color: GRAY });
     page.drawText(flight.destination_city, { x: width - 140, y: height - 292, size: 12, font: regularFont, color: GRAY });
@@ -202,7 +202,7 @@ export async function generateBoardingPassPDF(pnr: string): Promise<Buffer> {
 
   // Route
   page.drawText(flight.origin, { x: 25, y: height - 135, size: 44, font: boldFont, color: BLACK });
-  page.drawText('→', { x: 170, y: height - 130, size: 28, font: boldFont, color: ORANGE });
+  page.drawText('->', { x: 170, y: height - 130, size: 28, font: boldFont, color: ORANGE });
   page.drawText(flight.destination, { x: 220, y: height - 135, size: 44, font: boldFont, color: BLACK });
   page.drawText(flight.origin_city, { x: 25, y: height - 150, size: 11, font: regularFont, color: GRAY });
   page.drawText(flight.destination_city, { x: 220, y: height - 150, size: 11, font: regularFont, color: GRAY });
