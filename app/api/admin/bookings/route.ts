@@ -28,7 +28,10 @@ export async function GET(request: NextRequest) {
       payment: b.payments,
     }));
 
-    return NextResponse.json({ success: true, data: { bookings, total: count } });
+    const response = NextResponse.json({ success: true, data: { bookings, total: count } });
+    // Prevent Vercel Edge caching for real-time data
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    return response;
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
