@@ -46,7 +46,12 @@ export default function CheckoutPage() {
     const cardLastFour = form.cardNumber.replace(/\s/g,'').slice(-4);
     const r = await fetch(`/api/payments/${params.paymentId}/process`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ cardLastFour, cardholderName: form.name })
+      body: JSON.stringify({ 
+        cardLastFour, 
+        cardholderName: form.name,
+        // Set forceSuccess to true for demo/testing - removes 10% random failure
+        forceSuccess: true 
+      })
     });
     const d = await r.json();
     if (d.success && d.data?.status === 'success') {
