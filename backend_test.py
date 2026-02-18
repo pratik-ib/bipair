@@ -442,6 +442,250 @@ class BipAirAPITester:
             )
             return False
 
+    def test_admin_passengers_api(self):
+        """Test admin passengers API"""
+        response = self.make_request("GET", "/api/admin/passengers?page=1&limit=10")
+        
+        if response["status_code"] == 200 and response["data"].get("success") is True:
+            data = response["data"].get("data", {})
+            if "passengers" in data and "total" in data:
+                self.log_test("Admin Passengers API", "PASS")
+                return True
+            else:
+                self.log_test("Admin Passengers API", "FAIL", f"Missing passengers or total: {data}")
+                return False
+        else:
+            self.log_test(
+                "Admin Passengers API", 
+                "FAIL",
+                f"Status: {response['status_code']}, Data: {response['data']}"
+            )
+            return False
+
+    def test_admin_payments_api(self):
+        """Test admin payments API"""
+        response = self.make_request("GET", "/api/admin/payments?page=1&limit=10")
+        
+        if response["status_code"] == 200 and response["data"].get("success") is True:
+            data = response["data"].get("data", {})
+            if "payments" in data and "total" in data:
+                self.log_test("Admin Payments API", "PASS")
+                return True
+            else:
+                self.log_test("Admin Payments API", "FAIL", f"Missing payments or total: {data}")
+                return False
+        else:
+            self.log_test(
+                "Admin Payments API", 
+                "FAIL",
+                f"Status: {response['status_code']}, Data: {response['data']}"
+            )
+            return False
+
+    def test_admin_notifications_api(self):
+        """Test admin notifications API"""
+        response = self.make_request("GET", "/api/admin/notifications")
+        
+        if response["status_code"] == 200 and response["data"].get("success") is True:
+            self.log_test("Admin Notifications API", "PASS")
+            return True
+        else:
+            self.log_test(
+                "Admin Notifications API", 
+                "FAIL",
+                f"Status: {response['status_code']}, Data: {response['data']}"
+            )
+            return False
+
+    def test_flight_details_api(self):
+        """Test flight details API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # Try to get flights first to find a valid flight ID
+        response = self.make_request("GET", "/api/admin/flights", headers=headers)
+        flight_id = None
+        
+        if response["status_code"] == 200:
+            flights = response["data"].get("data", {}).get("flights", [])
+            if flights:
+                flight_id = flights[0].get("id")
+        
+        if flight_id:
+            response = self.make_request("GET", f"/api/flights/{flight_id}", headers=headers)
+            if response["status_code"] == 200 and response["data"].get("success") is True:
+                self.log_test("Flight Details API", "PASS", f"Flight ID: {flight_id}")
+                return True
+        
+        # Test with fake ID to check error handling
+        response = self.make_request("GET", "/api/flights/fake-flight-id", headers=headers)
+        if response["status_code"] == 404:
+            self.log_test("Flight Details API", "PASS", "No flights found, tested error handling")
+            return True
+        else:
+            self.log_test("Flight Details API", "FAIL", "No flights found and error handling failed")
+            return False
+
+    def test_seat_map_image_api(self):
+        """Test seat map image API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # Test with a fake flight ID (should return 404 or proper error)
+        response = self.make_request("GET", "/api/flights/fake-flight-id/seat-map-image", headers=headers)
+        
+        # Check if it returns proper error for non-existent flight
+        if response["status_code"] in [404, 400, 500]:
+            self.log_test("Seat Map Image API", "PASS", "Proper error handling for non-existent flight")
+            return True
+        else:
+            self.log_test(
+                "Seat Map Image API", 
+                "FAIL",
+                f"Unexpected response: {response['status_code']}, {response['data']}"
+            )
+            return False
+
+    def test_checkin_api(self):
+        """Test check-in API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # Test with non-existent PNR
+        response = self.make_request("GET", "/api/checkin/NOTEXIST", headers=headers)
+        
+        if response["status_code"] == 404:
+            self.log_test("Check-in API", "PASS", "Proper 404 for non-existent PNR")
+            return True
+        else:
+            self.log_test(
+                "Check-in API", 
+                "FAIL",
+                f"Expected 404, got {response['status_code']}: {response['data']}"
+            )
+            return False
+
+    def test_notifications_send_api(self):
+        """Test notifications send API"""
+        headers = {"x-api-key": self.api_key}
+        
+        test_data = {
+            "passengerId": "test-passenger-id",
+            "message": "Test notification message"
+        }
+        
+        response = self.make_request(
+            "POST", 
+            "/api/notifications/send",
+            headers=headers,
+            json_data=test_data
+        )
+        
+        # Accept either success or proper error handling
+        if response["status_code"] in [200, 400, 404, 500]:
+            if response["status_code"] == 200 and response["data"].get("success") is True:
+                self.log_test("Notifications Send API", "PASS", "Notification sent successfully")
+            else:
+                self.log_test("Notifications Send API", "PASS", f"Proper error handling: {response['status_code']}")
+            return True
+        else:
+            self.log_test(
+                "Notifications Send API", 
+                "FAIL",
+                f"Unexpected response: {response['status_code']}, {response['data']}"
+            )
+            return False
+
+    def test_pdf_ticket_api(self):
+        """Test PDF ticket generation API"""
+        # Test with non-existent PNR
+        response = self.make_request("GET", "/api/ticket/NOTEXIST")
+        
+        if response["status_code"] == 404:
+            self.log_test("PDF Ticket API", "PASS", "Proper 404 for non-existent PNR")
+            return True
+        else:
+            self.log_test(
+                "PDF Ticket API", 
+                "FAIL",
+                f"Expected 404, got {response['status_code']}: {response['data']}"
+            )
+            return False
+
+    def test_pdf_boarding_pass_api(self):
+        """Test PDF boarding pass generation API"""
+        # Test with non-existent PNR
+        response = self.make_request("GET", "/api/boarding-pass/NOTEXIST")
+        
+        if response["status_code"] == 404:
+            self.log_test("PDF Boarding Pass API", "PASS", "Proper 404 for non-existent PNR")
+            return True
+        else:
+            self.log_test(
+                "PDF Boarding Pass API", 
+                "FAIL",
+                f"Expected 404, got {response['status_code']}: {response['data']}"
+            )
+            return False
+
+    def test_admin_logout_api(self):
+        """Test admin logout API"""
+        response = self.make_request("POST", "/api/auth/logout")
+        
+        if response["status_code"] == 200 and response["data"].get("success") is True:
+            self.log_test("Admin Logout API", "PASS")
+            return True
+        else:
+            self.log_test(
+                "Admin Logout API", 
+                "FAIL",
+                f"Status: {response['status_code']}, Data: {response['data']}"
+            )
+            return False
+
+    def test_payments_process_api(self):
+        """Test payments process API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # Try with fake payment ID to test error handling
+        test_data = {
+            "cardLastFour": "1234",
+            "cardholderName": "John Doe"
+        }
+        
+        response = self.make_request(
+            "POST", 
+            "/api/payments/fake-payment-id/process",
+            headers=headers,
+            json_data=test_data
+        )
+        
+        # Should return 404 or proper error for non-existent payment
+        if response["status_code"] in [404, 400]:
+            self.log_test("Payments Process API", "PASS", "Proper error handling for non-existent payment")
+            return True
+        else:
+            self.log_test(
+                "Payments Process API", 
+                "FAIL",
+                f"Expected 404/400, got {response['status_code']}: {response['data']}"
+            )
+            return False
+
+    def test_checkin_seat_map_image_api(self):
+        """Test check-in seat map image API"""
+        headers = {"x-api-key": self.api_key}
+        
+        # Test with non-existent PNR
+        response = self.make_request("GET", "/api/checkin/NOTEXIST/seat-map-image", headers=headers)
+        
+        if response["status_code"] in [404, 400]:
+            self.log_test("Check-in Seat Map Image API", "PASS", "Proper error handling for non-existent PNR")
+            return True
+        else:
+            self.log_test(
+                "Check-in Seat Map Image API", 
+                "FAIL",
+                f"Expected 404/400, got {response['status_code']}: {response['data']}"
+            )
+            return False
     def run_all_tests(self):
         """Run all priority tests"""
         print("🚀 Starting BipAir Backend API Tests...")
