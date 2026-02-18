@@ -47,15 +47,15 @@ export async function POST(request: NextRequest) {
 
     // Check if seat is already taken (only for non-cancelled bookings)
     if (seatNumber) {
-      const { data: existingSeat } = await supabaseAdmin
+      const { data: existingSeats, error: seatError } = await supabaseAdmin
         .from('bookings')
         .select('id, pnr')
         .eq('flight_id', flightId)
         .eq('seat_number', seatNumber)
-        .neq('status', 'cancelled')
-        .single();
+        .neq('status', 'cancelled');
       
-      if (existingSeat) {
+      // If we found any bookings with this seat, reject the request
+      if (!seatError && existingSeats && existingSeats.length > 0) {
         return NextResponse.json({ 
           success: false, 
           error: `Seat ${seatNumber} is already taken on this flight` 
