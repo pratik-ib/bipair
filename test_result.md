@@ -191,9 +191,9 @@ backend:
 
   - task: "Admin Payments API"
     implemented: true
-    working: false
+    working: true
     file: "app/api/admin/payments/route.ts, app/api/admin/payments/[id]/refund/route.ts"
-    stuck_count: 1
+    stuck_count: 0
     priority: "medium"
     needs_retesting: false
     status_history:
@@ -203,6 +203,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "TESTED: Same Supabase authentication issue."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: Admin payments API working! Returns paginated payment data with proper structure."
 
   - task: "Chatbot Flights Search API"
     implemented: true
