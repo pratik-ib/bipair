@@ -66,83 +66,84 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 }
 
 /**
- * Fire webhook notification asynchronously (non-blocking)
- * This ensures webhook failures don't affect the payment response
+ * Fire webhook notification asynchronously
+ * Returns a promise that resolves when webhook is sent (or fails)
  */
-function fireWebhook(payment: any, booking: any, transactionRef: string) {
-  // Non-blocking async webhook fire
-  (async () => {
-    try {
-      // Fetch full passenger and flight details for webhook payload
-      const { data: passenger } = await supabaseAdmin
-        .from('passengers')
-        .select('*')
-        .eq('id', booking.passenger_id)
-        .single();
+async function fireWebhook(payment: any, booking: any, transactionRef: string): Promise<void> {
+  try {
+    console.log(`[Webhook] Starting webhook delivery for PNR ${booking.pnr}`);
+    
+    // Fetch full passenger and flight details for webhook payload
+    const { data: passenger } = await supabaseAdmin
+      .from('passengers')
+      .select('*')
+      .eq('id', booking.passenger_id)
+      .single();
 
-      const { data: flight } = await supabaseAdmin
-        .from('flights')
-        .select('*')
-        .eq('id', booking.flight_id)
-        .single();
+    const { data: flight } = await supabaseAdmin
+      .from('flights')
+      .select('*')
+      .eq('id', booking.flight_id)
+      .single();
 
-      if (!passenger || !flight) {
-        console.error('Webhook: Missing passenger or flight data');
-        return;
-      }
-
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-      
-      const webhookPayload = {
-        event: 'payment.success',
-        pnr: booking.pnr,
-        paymentId: payment.id,
-        amount: payment.amount,
-        currency: payment.currency,
-        transactionRef: transactionRef,
-        ticketUrl: `${baseUrl}/api/ticket/${booking.pnr}`,
-        checkInUrl: `${baseUrl}/checkin/${booking.pnr}`,
-        boardingPassUrl: `${baseUrl}/api/boarding-pass/${booking.pnr}`,
-        passenger: {
-          firstName: passenger.first_name,
-          lastName: passenger.last_name,
-          phone: passenger.phone,
-          email: passenger.email,
-          loyaltyPoints: passenger.loyalty_points,
-        },
-        flight: {
-          flightNumber: flight.flight_number,
-          origin: flight.origin,
-          originCity: flight.origin_city,
-          destination: flight.destination,
-          destinationCity: flight.destination_city,
-          departureTime: flight.departure_time,
-          arrivalTime: flight.arrival_time,
-          gate: flight.gate,
-          terminal: flight.terminal,
-          status: flight.status,
-        },
-        booking: {
-          seatNumber: booking.seat_number,
-          fareClass: booking.fare_class,
-          bookingSource: booking.booking_source,
-          createdAt: booking.created_at,
-        },
-      };
-
-      const response = await fetch(payment.webhook_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookPayload),
-      });
-
-      if (response.ok) {
-        console.log(`Webhook delivered successfully to ${payment.webhook_url} for PNR ${booking.pnr}`);
-      } else {
-        console.error(`Webhook delivery failed: ${response.status} ${response.statusText}`);
-      }
-    } catch (err) {
-      console.error('Webhook delivery failed:', err);
+    if (!passenger || !flight) {
+      console.error('[Webhook] Missing passenger or flight data');
+      return;
     }
-  })();
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    
+    const webhookPayload = {
+      event: 'payment.success',
+      pnr: booking.pnr,
+      paymentId: payment.id,
+      amount: payment.amount,
+      currency: payment.currency,
+      transactionRef: transactionRef,
+      ticketUrl: `${baseUrl}/api/ticket/${booking.pnr}`,
+      checkInUrl: `${baseUrl}/checkin/${booking.pnr}`,
+      boardingPassUrl: `${baseUrl}/api/boarding-pass/${booking.pnr}`,
+      passenger: {
+        firstName: passenger.first_name,
+        lastName: passenger.last_name,
+        phone: passenger.phone,
+        email: passenger.email,
+        loyaltyPoints: passenger.loyalty_points,
+      },
+      flight: {
+        flightNumber: flight.flight_number,
+        origin: flight.origin,
+        originCity: flight.origin_city,
+        destination: flight.destination,
+        destinationCity: flight.destination_city,
+        departureTime: flight.departure_time,
+        arrivalTime: flight.arrival_time,
+        gate: flight.gate,
+        terminal: flight.terminal,
+        status: flight.status,
+      },
+      booking: {
+        seatNumber: booking.seat_number,
+        fareClass: booking.fare_class,
+        bookingSource: booking.booking_source,
+        createdAt: booking.created_at,
+      },
+    };
+
+    console.log(`[Webhook] Sending POST to ${payment.webhook_url}`);
+    
+    const response = await fetch(payment.webhook_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayload),
+    });
+
+    if (response.ok) {
+      console.log(`[Webhook] ✓ Delivered successfully to ${payment.webhook_url} for PNR ${booking.pnr}`);
+    } else {
+      console.error(`[Webhook] ✗ Delivery failed: ${response.status} ${response.statusText}`);
+    }
+  } catch (err) {
+    console.error('[Webhook] ✗ Delivery error:', err);
+  }
 }
