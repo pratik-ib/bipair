@@ -263,7 +263,7 @@ export async function generateBoardingPassPDF(pnr: string): Promise<Buffer> {
   page.drawText(booking.seat_number || 'TBD', { x: rightCenterX - 18, y: height - 270, size: 18, font: boldFont, color: BLACK });
 
   // Checked in badge
-  page.drawText('✓ CHECKED IN', { x: rightCenterX - 38, y: 30, size: 10, font: boldFont, color: GREEN });
+  page.drawText('CHECKED IN', { x: rightCenterX - 38, y: 30, size: 10, font: boldFont, color: GREEN });
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);
