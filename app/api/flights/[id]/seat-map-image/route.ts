@@ -30,6 +30,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { data: bookings } = await supabaseAdmin
       .from('bookings').select('seat_number').eq('flight_id', params.id).neq('status', 'cancelled');
     const occupiedSeats = bookings?.map(b => b.seat_number).filter(Boolean) || [];
+    
+    console.log(`[SeatMap] Flight ${params.id}: occupiedSeats =`, occupiedSeats);
 
     const imageBuffer = await generateSeatMapImage({
       flightNumber: flight.flight_number,
