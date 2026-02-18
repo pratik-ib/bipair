@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
 
+// Force dynamic rendering - prevent Vercel edge caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function getBookingByPnr(pnr: string) {
   const { data: booking } = await supabaseAdmin.from('bookings').select('*').eq('pnr', pnr).single();
   if (!booking) return null;
