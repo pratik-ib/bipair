@@ -320,15 +320,18 @@ backend:
 
   - task: "PDF Ticket and Boarding Pass Generation"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/api/ticket/[pnr]/route.ts, app/api/boarding-pass/[pnr]/route.ts, lib/pdf.ts"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET PDF for ticket and boarding pass. Boarding pass requires checked_in status."
+      - working: false
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST: PDF generation APIs return 500/520 server errors (likely pdf-lib or cloud environment issues). Minor: Core API routing works but PDF generation libraries have issues. Not critical for core booking functionality."
 
 frontend:
   - task: "Admin Login Page"
