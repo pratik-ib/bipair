@@ -21,6 +21,7 @@ export function formatDateTime(dt: string): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'UTC',
   });
 }
 
@@ -29,6 +30,7 @@ export function formatDate(dt: string): string {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }
 
@@ -36,6 +38,7 @@ export function formatTime(dt: string): string {
   return new Date(dt).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'UTC',
   });
 }
 
