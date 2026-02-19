@@ -227,11 +227,11 @@ backend:
 
   - task: "Chatbot Bookings API (create/get/update/delete)"
     implemented: true
-    working: false
+    working: true
     file: "app/api/bookings/route.ts, app/api/bookings/[pnr]/route.ts"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -245,6 +245,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Fixed in app/api/bookings/[pnr]/route.ts: Now accepts both camelCase and snake_case for all fields (specialRequests->special_requests, seatNumber->seat_number, paymentStatus->payment_status). Added guard to return 400 if no valid fields are in the update. Switched from .single() to .maybeSingle() and added existence check before update to prevent the empty-update crash. Needs retesting."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE PATCH ENDPOINT TEST: All 6 test cases passed (100% success rate). ✅ CONFIRMED: camelCase input (specialRequests) now works correctly - original failing case resolved. ✅ snake_case input still works. ✅ Returns 400 for invalid fields. ✅ Returns 404 for non-existent PNR. ✅ Returns 401 without API key. ✅ Status updates work. Additional edge case testing confirmed mixed camelCase/snake_case handling and multiple camelCase fields work correctly. The fix has completely resolved the user's reported issue."
 
   - task: "Chatbot Check-in API"
     implemented: true
