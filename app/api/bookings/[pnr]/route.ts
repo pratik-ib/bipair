@@ -36,11 +36,43 @@ export async function PATCH(request: NextRequest, { params }: { params: { pnr: s
 
   try {
     const body = await request.json();
-    const allowed = ['status', 'seat_number', 'special_requests', 'payment_status'];
-    const updates: any = {};
-    for (const key of allowed) { if (body[key] !== undefined) updates[key] = body[key]; }
 
-    const { data, error } = await supabaseAdmin.from('bookings').update(updates).eq('pnr', params.pnr).select().single();
+    // Accept both camelCase and snake_case keys for all allowed fields
+    const updates: any = {};
+    if (body.status !== undefined) updates.status = body.status;
+    if (body.seat_number !== undefined) updates.seat_number = body.seat_number;
+    if (body.seatNumber !== undefined) updates.seat_number = body.seatNumber;
+    if (body.special_requests !== undefined) updates.special_requests = body.special_requests;
+    if (body.specialRequests !== undefined) updates.special_requests = body.specialRequests;
+    if (body.payment_status !== undefined) updates.payment_status = body.payment_status;
+    if (body.paymentStatus !== undefined) updates.payment_status = body.paymentStatus;
+
+    // Guard: if no valid fields provided, return 400 instead of sending empty update to Supabase
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No valid fields to update. Allowed fields: status, seat_number, special_requests, payment_status' },
+        { status: 400 }
+      );
+    }
+
+    // First verify the booking exists
+    const { data: existing, error: fetchError } = await supabaseAdmin
+      .from('bookings')
+      .select('id')
+      .eq('pnr', params.pnr)
+      .maybeSingle();
+
+    if (fetchError) throw fetchError;
+    if (!existing) return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+
+    // Perform the update and return the updated row
+    const { data, error } = await supabaseAdmin
+      .from('bookings')
+      .update(updates)
+      .eq('pnr', params.pnr)
+      .select()
+      .maybeSingle();
+
     if (error) throw error;
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
