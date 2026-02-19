@@ -227,11 +227,11 @@ backend:
 
   - task: "Chatbot Bookings API (create/get/update/delete)"
     implemented: true
-    working: true
+    working: false
     file: "app/api/bookings/route.ts, app/api/bookings/[pnr]/route.ts"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -239,6 +239,12 @@ backend:
       - working: true
         agent: "testing"
         comment: "TESTED: API key validation works correctly. GET for non-existent PNRs returns proper 404. Core routing and auth logic functional."
+      - working: false
+        agent: "user"
+        comment: "User reported PATCH /api/bookings/BPJZGI with body {specialRequests:'Vegetarian meal please'} returns error: 'Cannot coerce the result to a single JSON object'. Root cause: 1) handler only accepted snake_case keys (special_requests) but user sent camelCase (specialRequests), causing empty updates object. 2) Supabase .update({}) with .single() fails when empty object causes it to match/return multiple rows."
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed in app/api/bookings/[pnr]/route.ts: Now accepts both camelCase and snake_case for all fields (specialRequests->special_requests, seatNumber->seat_number, paymentStatus->payment_status). Added guard to return 400 if no valid fields are in the update. Switched from .single() to .maybeSingle() and added existence check before update to prevent the empty-update crash. Needs retesting."
 
   - task: "Chatbot Check-in API"
     implemented: true
