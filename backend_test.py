@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 
 class BipAirAPITester:
     def __init__(self):
-        self.base_url = "https://bipair-tickets.preview.emergentagent.com"
+        self.base_url = "https://bipair-chat.preview.emergentagent.com"
         self.api_key = "bipair-demo-key-2026"
         self.admin_credentials = {
             "username": "admin", 
