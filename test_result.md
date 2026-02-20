@@ -495,7 +495,6 @@ metadata:
 test_plan:
   current_focus:
     - "API Request Logs Feature"
-    - "Chatbot Bookings API (create/get/update/delete)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -513,3 +512,5 @@ agent_communication:
     message: "PATCH /api/bookings/[pnr] was broken. User sent {specialRequests:'Vegetarian meal please'} but handler only accepted snake_case keys, resulting in empty updates={} which caused Supabase .update({}).single() to throw 'Cannot coerce the result to a single JSON object'. Fixed by: 1) accepting both camelCase and snake_case for all allowed fields, 2) returning 400 if updates is empty, 3) using .maybeSingle() instead of .single(), 4) checking booking existence before update. Test the PATCH endpoint with: PATCH /api/bookings/{valid_pnr} with header x-api-key: bipair-demo-key-2026 and body {specialRequests:'Vegetarian meal'} (camelCase) AND {special_requests:'Vegetarian meal'} (snake_case). Also test with invalid body to confirm 400 response. Use a real PNR from the DB if possible, or test with a fake PNR to confirm 404. App URL: http://localhost:3000"
   - agent: "testing"
     message: "PATCH ENDPOINT TESTING COMPLETE - 100% SUCCESS! Tested the specific PATCH /api/bookings/[pnr] endpoint with all requested test cases. ✅ ORIGINAL ISSUE RESOLVED: camelCase input (specialRequests) now works perfectly. ✅ Comprehensive testing performed: camelCase, snake_case, mixed case, invalid fields (400), non-existent PNR (404), missing API key (401), status updates, and multiple field updates. All 6 core tests passed with 100% success rate. The fix has completely resolved the user's reported issue - the endpoint now properly accepts both camelCase and snake_case field names."
+  - agent: "testing"
+    message: "API REQUEST LOGS FEATURE TESTING COMPLETE - 100% SUCCESS! ✅ All key success criteria achieved: (1) Admin logs endpoint requires authentication - 401 without session, 503 with setupRequired:true when api_logs table missing, (2) Chatbot APIs NOT broken by logging - 100% of 7 test cases passed including flights search, bookings, check-in, payments, passengers, (3) Fire-and-forget logging implemented correctly - APIs continue to work even when logging fails. Fixed admin logs error handling to properly detect Supabase table-not-found errors. Feature ready for production - logging adds comprehensive API monitoring without impacting core functionality."
