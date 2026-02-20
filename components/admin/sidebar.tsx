@@ -16,6 +16,7 @@ const navItems = [
   { href: '/admin/passengers', label: 'Passengers', icon: Users },
   { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   { href: '/admin/notifications', label: 'Notifications', icon: Bell },
+  { href: '/admin/logs', label: 'API Logs', icon: Activity },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
