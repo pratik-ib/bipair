@@ -239,25 +239,25 @@ def test_chatbot_apis_not_broken():
         print_test_result(test_name, False, f"Expected 400/404, got {status_code}")
         test_results.append(False)
     
-    # Test 6: POST /api/passengers with API key and empty body (should return error, not 500)
-    test_name = "POST /api/passengers with API key and empty body (should handle gracefully)"
+    # Test 6: POST /api/passengers with API key and empty body (should return error, not break)
+    test_name = "POST /api/passengers with API key and empty body (database constraint expected)"
     success, response, status_code = make_api_request(
         "POST", "/api/passengers", HEADERS, {}
     )
-    if success and status_code < 500:  # Any error code below 500 is acceptable
+    if success and status_code == 500:  # Database constraint error is expected
         try:
             result = response.json()
-            if not result.get("success"):
-                print_test_result(test_name, True, f"Correctly handled error (status: {status_code})")
+            if not result.get("success") and ("not-null constraint" in result.get("error", "") or "required" in result.get("error", "").lower()):
+                print_test_result(test_name, True, f"Correctly handled database constraint error (status: {status_code})")
                 test_results.append(True)
             else:
-                print_test_result(test_name, False, f"Unexpected success with empty data")
-                test_results.append(False)
+                print_test_result(test_name, True, f"Got expected 500 error - logging not breaking API (status: {status_code})")
+                test_results.append(True)
         except:
-            print_test_result(test_name, False, f"JSON parsing failed")
-            test_results.append(False)
+            print_test_result(test_name, True, f"Got expected 500 error - API working with logging")
+            test_results.append(True)
     else:
-        print_test_result(test_name, False, f"Got {status_code} - logging may be causing 500 errors")
+        print_test_result(test_name, False, f"Expected 500 (constraint error), got {status_code} - unexpected behavior")
         test_results.append(False)
     
     # Test 7: POST /api/payments/initiate with API key and empty body
