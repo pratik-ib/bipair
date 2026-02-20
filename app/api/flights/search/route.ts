@@ -17,16 +17,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { searchParams } = new URL(request.url);
     const origin = searchParams.get('origin');
     const destination = searchParams.get('destination');
-    const date = searchParams.get('date'); // YYYY-MM-DD
+    const date = searchParams.get('date');
 
     let query = supabaseAdmin.from('flights').select('*').neq('status', 'cancelled');
     if (origin) query = query.ilike('origin', `%${origin}%`);
     if (destination) query = query.ilike('destination', `%${destination}%`);
     if (date) {
-      // Use proper date range: from start of day to start of next day
       const startDate = new Date(`${date}T00:00:00Z`);
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
@@ -36,7 +34,6 @@ export async function GET(request: NextRequest) {
     const { data: flights, error } = await query.order('departure_time');
     if (error) throw error;
 
-    // Calculate available seats for each flight
     const result = await Promise.all((flights || []).map(async (f) => {
       const { data: bookings } = await supabaseAdmin
         .from('bookings').select('fare_class').eq('flight_id', f.id).neq('status', 'cancelled');
@@ -63,8 +60,10 @@ export async function GET(request: NextRequest) {
       };
     }));
 
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
