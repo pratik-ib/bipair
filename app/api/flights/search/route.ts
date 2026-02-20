@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
 import { getDurationMinutes } from '@/lib/bipair-utils';
+import { logApiRequest, extractRequestMeta } from '@/lib/api-logger';
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
+  const { searchParams } = new URL(request.url);
+  const queryParams = Object.fromEntries(searchParams.entries());
+
+  if (!valid) {
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const { searchParams } = new URL(request.url);
