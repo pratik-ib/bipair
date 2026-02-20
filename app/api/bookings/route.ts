@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
 import { generatePNR } from '@/lib/bipair-utils';
+import { logApiRequest, extractRequestMeta } from '@/lib/api-logger';
 
 const LOYALTY_POINTS: Record<string, number> = {
   economy: 100,
@@ -10,16 +11,23 @@ const LOYALTY_POINTS: Record<string, number> = {
 };
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
 
+  if (!valid) {
+    logApiRequest({ method: 'POST', path: '/api/bookings', responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: any = {};
   try {
-    const body = await request.json();
+    body = await request.json();
     const {
       passengerPhone, firstName, lastName, email,
       passportNumber, nationality, dateOfBirth,
       flightId, fareClass, seatNumber, specialRequests,
-      webhookUrl, // NEW: Optional webhook URL for payment notifications
+      webhookUrl,
     } = body;
 
     // Get or create passenger
@@ -41,11 +49,12 @@ export async function POST(request: NextRequest) {
       passenger = newP;
     }
 
-    // Get flight for pricing
     const { data: flight } = await supabaseAdmin.from('flights').select('*').eq('id', flightId).single();
-    if (!flight) return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
+    if (!flight) {
+      logApiRequest({ method: 'POST', path: '/api/bookings', requestBody: body, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Flight not found', apiKeyPresent: true });
+      return NextResponse.json({ success: false, error: 'Flight not found' }, { status: 404 });
+    }
 
-    // Check if seat is already taken (only for non-cancelled bookings)
     if (seatNumber) {
       const { data: existingSeats, error: seatError } = await supabaseAdmin
         .from('bookings')
@@ -53,13 +62,9 @@ export async function POST(request: NextRequest) {
         .eq('flight_id', flightId)
         .eq('seat_number', seatNumber)
         .neq('status', 'cancelled');
-      
-      // If we found any bookings with this seat, reject the request
       if (!seatError && existingSeats && existingSeats.length > 0) {
-        return NextResponse.json({ 
-          success: false, 
-          error: `Seat ${seatNumber} is already taken on this flight` 
-        }, { status: 409 });
+        logApiRequest({ method: 'POST', path: '/api/bookings', requestBody: body, responseStatus: 409, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: `Seat ${seatNumber} already taken`, apiKeyPresent: true });
+        return NextResponse.json({ success: false, error: `Seat ${seatNumber} is already taken on this flight` }, { status: 409 });
       }
     }
 
@@ -70,7 +75,6 @@ export async function POST(request: NextRequest) {
     };
     const amount = priceMap[fareClass] || flight.economy_price;
 
-    // Generate unique PNR
     let pnr = generatePNR();
     let pnrExists = true;
     while (pnrExists) {
@@ -79,7 +83,6 @@ export async function POST(request: NextRequest) {
       else pnr = generatePNR();
     }
 
-    // Create booking
     const { data: booking, error: bErr } = await supabaseAdmin.from('bookings').insert({
       pnr, passenger_id: passenger.id, flight_id: flightId,
       seat_number: seatNumber, fare_class: fareClass,
@@ -89,52 +92,47 @@ export async function POST(request: NextRequest) {
     }).select().single();
     if (bErr) throw bErr;
 
-    // Create payment record with optional webhook_url
     const paymentData: any = {
       booking_id: booking.id,
       amount, currency: 'USD',
       status: 'pending', payment_method: 'card',
     };
-    
-    // Save webhook URL if provided
-    if (webhookUrl) {
-      paymentData.webhook_url = webhookUrl;
-    }
+    if (webhookUrl) paymentData.webhook_url = webhookUrl;
 
     const { data: payment, error: payErr } = await supabaseAdmin.from('payments').insert(paymentData).select().single();
     if (payErr) throw payErr;
 
-    // Update booking with payment_id
     await supabaseAdmin.from('bookings').update({ payment_id: payment.id }).eq('id', booking.id);
 
-    // Award loyalty points
     const points = LOYALTY_POINTS[fareClass] || 100;
     await supabaseAdmin.from('passengers').update({
       loyalty_points: (passenger.loyalty_points || 0) + points
     }).eq('id', passenger.id);
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    logApiRequest({ method: 'POST', path: '/api/bookings', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({
       success: true,
       data: {
-        pnr, 
-        bookingId: booking.id, 
+        pnr,
+        bookingId: booking.id,
         paymentId: payment.id,
-        amount, 
+        amount,
         currency: 'USD',
         checkoutUrl: `${baseUrl}/checkout/${payment.id}`,
         ticketUrl: `${baseUrl}/api/ticket/${pnr}`,
         checkInUrl: `${baseUrl}/checkin/${pnr}`,
         boardingPassUrl: `${baseUrl}/api/boarding-pass/${pnr}`,
-        passenger: { 
-          id: passenger.id, 
-          firstName: passenger.first_name, 
-          lastName: passenger.last_name, 
-          loyaltyPoints: passenger.loyalty_points + points 
+        passenger: {
+          id: passenger.id,
+          firstName: passenger.first_name,
+          lastName: passenger.last_name,
+          loyaltyPoints: passenger.loyalty_points + points
         },
       },
     });
   } catch (error: any) {
+    logApiRequest({ method: 'POST', path: '/api/bookings', requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
