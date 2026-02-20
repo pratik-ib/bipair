@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Plane, Ticket, Users,
-  CreditCard, Bell, Settings, LogOut, Menu, X
+  CreditCard, Bell, Settings, LogOut, Menu, X, Activity
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
