@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
+import { logApiRequest, extractRequestMeta } from '@/lib/api-logger';
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
 
+  if (!valid) {
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: any = {};
   try {
-    const { pnr } = await request.json();
+    body = await request.json();
+    const { pnr } = body;
     const { data: booking } = await supabaseAdmin.from('bookings').select('*').eq('pnr', pnr).single();
-    if (!booking) return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    if (!booking) {
+      logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Booking not found', apiKeyPresent: true });
+      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    }
 
     let payment: any;
     if (booking.payment_id) {
@@ -26,6 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({
       success: true,
       data: {
@@ -35,6 +48,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
