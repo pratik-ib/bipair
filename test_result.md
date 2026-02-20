@@ -483,6 +483,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "API Request Logs Feature"
     - "Chatbot Bookings API (create/get/update/delete)"
   stuck_tasks: []
   test_all: false
