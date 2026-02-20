@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { validateApiKey } from '@/lib/api-auth';
+import { logApiRequest, extractRequestMeta } from '@/lib/api-logger';
 
 // Force dynamic rendering - prevent Vercel edge caching
 export const dynamic = 'force-dynamic';
@@ -18,24 +19,44 @@ async function getBookingByPnr(pnr: string) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: { pnr: string } }) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
+  const path = `/api/bookings/${params.pnr}`;
+
+  if (!valid) {
+    logApiRequest({ method: 'GET', path, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const booking = await getBookingByPnr(params.pnr);
-    if (!booking) return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    if (!booking) {
+      logApiRequest({ method: 'GET', path, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Booking not found', apiKeyPresent: true });
+      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    }
+    logApiRequest({ method: 'GET', path, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({ success: true, data: booking });
   } catch (error: any) {
+    logApiRequest({ method: 'GET', path, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { pnr: string } }) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
+  const path = `/api/bookings/${params.pnr}`;
 
+  if (!valid) {
+    logApiRequest({ method: 'PATCH', path, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: any = {};
   try {
-    const body = await request.json();
+    body = await request.json();
 
     // Accept both camelCase and snake_case keys for all allowed fields
     const updates: any = {};
@@ -47,8 +68,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { pnr: s
     if (body.payment_status !== undefined) updates.payment_status = body.payment_status;
     if (body.paymentStatus !== undefined) updates.payment_status = body.paymentStatus;
 
-    // Guard: if no valid fields provided, return 400 instead of sending empty update to Supabase
+    // Guard: if no valid fields provided, return 400
     if (Object.keys(updates).length === 0) {
+      logApiRequest({ method: 'PATCH', path, requestBody: body, responseStatus: 400, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'No valid fields to update', apiKeyPresent: true });
       return NextResponse.json(
         { success: false, error: 'No valid fields to update. Allowed fields: status, seat_number, special_requests, payment_status' },
         { status: 400 }
@@ -63,9 +85,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { pnr: s
       .maybeSingle();
 
     if (fetchError) throw fetchError;
-    if (!existing) return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    if (!existing) {
+      logApiRequest({ method: 'PATCH', path, requestBody: body, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Booking not found', apiKeyPresent: true });
+      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    }
 
-    // Perform the update and return the updated row
+    // Perform the update
     const { data, error } = await supabaseAdmin
       .from('bookings')
       .update(updates)
@@ -74,19 +99,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { pnr: s
       .maybeSingle();
 
     if (error) throw error;
+    logApiRequest({ method: 'PATCH', path, requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
+    logApiRequest({ method: 'PATCH', path, requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { pnr: string } }) {
+  const startTime = Date.now();
   const { valid } = validateApiKey(request);
-  if (!valid) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  const { ipAddress, userAgent } = extractRequestMeta(request);
+  const path = `/api/bookings/${params.pnr}`;
+
+  if (!valid) {
+    logApiRequest({ method: 'DELETE', path, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const { data: booking } = await supabaseAdmin.from('bookings').select('*').eq('pnr', params.pnr).single();
-    if (!booking) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+    if (!booking) {
+      logApiRequest({ method: 'DELETE', path, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Not found', apiKeyPresent: true });
+      return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+    }
 
     await supabaseAdmin.from('bookings').update({ status: 'cancelled' }).eq('pnr', params.pnr);
     let refunded = false;
@@ -95,8 +132,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { pnr: 
       await supabaseAdmin.from('bookings').update({ payment_status: 'refunded' }).eq('pnr', params.pnr);
       refunded = true;
     }
+    logApiRequest({ method: 'DELETE', path, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
     return NextResponse.json({ success: true, data: { refunded } });
   } catch (error: any) {
+    logApiRequest({ method: 'DELETE', path, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
