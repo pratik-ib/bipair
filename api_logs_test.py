@@ -10,7 +10,7 @@ import time
 from typing import Optional, Dict, Any, Tuple
 
 # Configuration
-BASE_URL = "https://bipair-chat.preview.emergentagent.com"
+BASE_URL = "http://localhost:3000"
 API_KEY = "bipair-demo-key-2026"
 ADMIN_CREDS = {"username": "admin", "password": "Infobip@123"}
 HEADERS = {"x-api-key": API_KEY}
