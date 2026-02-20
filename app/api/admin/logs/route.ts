@@ -64,7 +64,9 @@ export async function GET(request: NextRequest) {
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error: any) {
-    if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+    if ((error.message?.includes('relation') && error.message?.includes('does not exist')) ||
+        error.message?.includes('Could not find the table') ||
+        error.message?.includes('api_logs') && error.message?.includes('schema cache')) {
       return NextResponse.json({
         success: false,
         error: 'api_logs table not found. Please run the SQL migration in Supabase.',
