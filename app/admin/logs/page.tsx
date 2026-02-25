@@ -14,6 +14,7 @@ interface ApiLog {
   path: string;
   query_params: Record<string, string> | null;
   request_body: any;
+  response_body: any;
   response_status: number;
   response_time_ms: number;
   ip_address: string | null;
