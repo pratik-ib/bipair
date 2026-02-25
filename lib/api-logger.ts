@@ -28,6 +28,12 @@ export function logApiRequest(params: ApiLogParams): void {
     if (safeBody.cardExpiry) safeBody.cardExpiry = '**/**';
   }
 
+  // Sanitize response body too
+  let safeResponse = params.responseBody;
+  if (safeResponse && typeof safeResponse === 'object') {
+    safeResponse = { ...safeResponse };
+  }
+
   // Fire and forget - intentionally not awaited
   supabaseAdmin
     .from('api_logs')
@@ -36,6 +42,7 @@ export function logApiRequest(params: ApiLogParams): void {
       path: params.path,
       query_params: params.queryParams || null,
       request_body: safeBody || null,
+      response_body: safeResponse || null,
       response_status: params.responseStatus,
       response_time_ms: params.responseTimeMs,
       ip_address: params.ipAddress || null,
