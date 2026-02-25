@@ -10,26 +10,30 @@ export async function GET(request: NextRequest, { params }: { params: { phone: s
   const path = `/api/passengers/${params.phone}`;
 
   if (!valid) {
-    logApiRequest({ method: 'GET', path, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const rb = { success: false, error: 'Unauthorized' };
+    logApiRequest({ method: 'GET', path, responseBody: rb, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json(rb, { status: 401 });
   }
 
   try {
     const phone = decodeURIComponent(params.phone);
     const { data: passenger } = await supabaseAdmin.from('passengers').select('*').eq('phone', phone).single();
     if (!passenger) {
-      logApiRequest({ method: 'GET', path, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Passenger not found', apiKeyPresent: true });
-      return NextResponse.json({ success: false, error: 'Passenger not found' }, { status: 404 });
+      const rb = { success: false, error: 'Passenger not found' };
+      logApiRequest({ method: 'GET', path, responseBody: rb, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Passenger not found', apiKeyPresent: true });
+      return NextResponse.json(rb, { status: 404 });
     }
 
     const { data: bookingsRaw } = await supabaseAdmin
       .from('bookings').select('*, flights(*)').eq('passenger_id', passenger.id).order('created_at', { ascending: false });
     const bookings = bookingsRaw?.map(b => ({ ...b, flight: b.flights })) || [];
 
-    logApiRequest({ method: 'GET', path, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-    return NextResponse.json({ success: true, data: { passenger, bookings } });
+    const rb = { success: true, data: { passenger, bookings } };
+    logApiRequest({ method: 'GET', path, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+    return NextResponse.json(rb);
   } catch (error: any) {
-    logApiRequest({ method: 'GET', path, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const rb = { success: false, error: error.message };
+    logApiRequest({ method: 'GET', path, responseBody: rb, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
+    return NextResponse.json(rb, { status: 500 });
   }
 }
