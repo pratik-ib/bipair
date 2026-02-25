@@ -5,6 +5,7 @@ interface ApiLogParams {
   path: string;
   queryParams?: Record<string, string> | null;
   requestBody?: any;
+  responseBody?: any;
   responseStatus: number;
   responseTimeMs: number;
   ipAddress?: string | null;
