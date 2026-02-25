@@ -12,8 +12,9 @@ export async function GET(request: NextRequest) {
   const queryParams = Object.fromEntries(searchParams.entries());
 
   if (!valid) {
-    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const rb = { success: false, error: 'Unauthorized' };
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseBody: rb, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json(rb, { status: 401 });
   }
 
   try {
@@ -60,10 +61,12 @@ export async function GET(request: NextRequest) {
       };
     }));
 
-    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-    return NextResponse.json({ success: true, data: result });
+    const rb = { success: true, data: result };
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+    return NextResponse.json(rb);
   } catch (error: any) {
-    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const rb = { success: false, error: error.message };
+    logApiRequest({ method: 'GET', path: '/api/flights/search', queryParams, responseBody: rb, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
+    return NextResponse.json(rb, { status: 500 });
   }
 }
