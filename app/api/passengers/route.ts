@@ -9,8 +9,9 @@ export async function POST(request: NextRequest) {
   const { ipAddress, userAgent } = extractRequestMeta(request);
 
   if (!valid) {
-    logApiRequest({ method: 'POST', path: '/api/passengers', responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const rb = { success: false, error: 'Unauthorized' };
+    logApiRequest({ method: 'POST', path: '/api/passengers', responseBody: rb, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json(rb, { status: 401 });
   }
 
   let body: any = {};
@@ -20,8 +21,9 @@ export async function POST(request: NextRequest) {
 
     const { data: existing } = await supabaseAdmin.from('passengers').select('*').eq('phone', phone).single();
     if (existing) {
-      logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-      return NextResponse.json({ success: true, data: { passenger: existing, isNew: false } });
+      const rb = { success: true, data: { passenger: existing, isNew: false } };
+      logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+      return NextResponse.json(rb);
     }
 
     const { data: newP, error } = await supabaseAdmin.from('passengers').insert({
@@ -29,10 +31,13 @@ export async function POST(request: NextRequest) {
       email, passport_number: passportNumber, nationality, date_of_birth: dateOfBirth, loyalty_points: 0,
     }).select().single();
     if (error) throw error;
-    logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-    return NextResponse.json({ success: true, data: { passenger: newP, isNew: true } });
+
+    const rb = { success: true, data: { passenger: newP, isNew: true } };
+    logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+    return NextResponse.json(rb);
   } catch (error: any) {
-    logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const rb = { success: false, error: error.message };
+    logApiRequest({ method: 'POST', path: '/api/passengers', requestBody: body, responseBody: rb, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
+    return NextResponse.json(rb, { status: 500 });
   }
 }
