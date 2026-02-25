@@ -356,6 +356,7 @@ export default function LogsPage() {
                   {isExpanded && (
                     <div className="px-6 pb-5 bg-gray-800/20 border-t border-gray-800">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4">
+                        {/* Meta info */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Request Info</h4>
                           <dl className="space-y-2 text-sm">
@@ -390,6 +391,7 @@ export default function LogsPage() {
                           </dl>
                         </div>
 
+                        {/* Request body */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Request Body</h4>
                           {log.request_body && Object.keys(log.request_body).length > 0 ? (
@@ -401,6 +403,27 @@ export default function LogsPage() {
                           )}
                         </div>
 
+                        {/* Response body */}
+                        <div className="space-y-3 md:col-span-2">
+                          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                            Response Body
+                            <span className={cn(
+                              'px-1.5 py-0.5 rounded text-xs font-bold border',
+                              getStatusBg(log.response_status)
+                            )}>
+                              {log.response_status}
+                            </span>
+                          </h4>
+                          {log.response_body && Object.keys(log.response_body).length > 0 ? (
+                            <pre className="text-xs text-gray-300 bg-gray-950 rounded-lg p-3 overflow-auto max-h-64 font-mono border border-gray-700 leading-relaxed">
+                              {JSON.stringify(log.response_body, null, 2)}
+                            </pre>
+                          ) : (
+                            <span className="text-gray-600 text-xs italic">No response body recorded</span>
+                          )}
+                        </div>
+
+                        {/* Query params */}
                         {log.query_params && Object.keys(log.query_params).length > 0 && (
                           <div className="md:col-span-2 space-y-2">
                             <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Query Parameters</h4>
