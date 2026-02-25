@@ -15,10 +15,13 @@ export async function POST(request: NextRequest) {
       channel: 'whatsapp', message, status: 'sent',
     }).select().single();
     if (error) throw error;
-    logApiRequest({ method: 'POST', path: '/api/notifications/send', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-    return NextResponse.json({ success: true, data: { notificationId: data.id } });
+
+    const rb = { success: true, data: { notificationId: data.id } };
+    logApiRequest({ method: 'POST', path: '/api/notifications/send', requestBody: body, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+    return NextResponse.json(rb);
   } catch (error: any) {
-    logApiRequest({ method: 'POST', path: '/api/notifications/send', requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const rb = { success: false, error: error.message };
+    logApiRequest({ method: 'POST', path: '/api/notifications/send', requestBody: body, responseBody: rb, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
+    return NextResponse.json(rb, { status: 500 });
   }
 }
