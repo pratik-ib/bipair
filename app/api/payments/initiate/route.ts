@@ -9,8 +9,9 @@ export async function POST(request: NextRequest) {
   const { ipAddress, userAgent } = extractRequestMeta(request);
 
   if (!valid) {
-    logApiRequest({ method: 'POST', path: '/api/payments/initiate', responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const rb = { success: false, error: 'Unauthorized' };
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', responseBody: rb, responseStatus: 401, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Unauthorized', apiKeyPresent: false });
+    return NextResponse.json(rb, { status: 401 });
   }
 
   let body: any = {};
@@ -19,8 +20,9 @@ export async function POST(request: NextRequest) {
     const { pnr } = body;
     const { data: booking } = await supabaseAdmin.from('bookings').select('*').eq('pnr', pnr).single();
     if (!booking) {
-      logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Booking not found', apiKeyPresent: true });
-      return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+      const rb = { success: false, error: 'Booking not found' };
+      logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseBody: rb, responseStatus: 404, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: 'Booking not found', apiKeyPresent: true });
+      return NextResponse.json(rb, { status: 404 });
     }
 
     let payment: any;
@@ -38,17 +40,19 @@ export async function POST(request: NextRequest) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
-    return NextResponse.json({
+    const rb = {
       success: true,
       data: {
         paymentId: payment.id, amount: payment.amount, currency: payment.currency,
         checkoutUrl: `${baseUrl}/checkout/${payment.id}`,
         bookingStatus: booking.status, paymentStatus: payment.status,
       },
-    });
+    };
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseBody: rb, responseStatus: 200, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, apiKeyPresent: true });
+    return NextResponse.json(rb);
   } catch (error: any) {
-    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const rb = { success: false, error: error.message };
+    logApiRequest({ method: 'POST', path: '/api/payments/initiate', requestBody: body, responseBody: rb, responseStatus: 500, responseTimeMs: Date.now() - startTime, ipAddress, userAgent, errorMessage: error.message, apiKeyPresent: true });
+    return NextResponse.json(rb, { status: 500 });
   }
 }
