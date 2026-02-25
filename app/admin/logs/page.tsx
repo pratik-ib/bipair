@@ -148,6 +148,7 @@ export default function LogsPage() {
             &nbsp;&nbsp;path TEXT NOT NULL,<br />
             &nbsp;&nbsp;query_params JSONB,<br />
             &nbsp;&nbsp;request_body JSONB,<br />
+            &nbsp;&nbsp;response_body JSONB,<br />
             &nbsp;&nbsp;response_status INTEGER NOT NULL,<br />
             &nbsp;&nbsp;response_time_ms INTEGER NOT NULL,<br />
             &nbsp;&nbsp;ip_address TEXT,<br />
@@ -155,6 +156,8 @@ export default function LogsPage() {
             &nbsp;&nbsp;error_message TEXT,<br />
             &nbsp;&nbsp;api_key_present BOOLEAN DEFAULT FALSE<br />
             );<br /><br />
+            <span className="text-blue-400">-- If table already exists, add the new column:</span><br />
+            <span className="text-green-400">ALTER TABLE</span> api_logs <span className="text-green-400">ADD COLUMN IF NOT EXISTS</span> response_body JSONB;<br /><br />
             <span className="text-green-400">CREATE INDEX</span> IF NOT EXISTS api_logs_timestamp_idx<br />
             &nbsp;&nbsp;ON api_logs(timestamp DESC);
           </div>
