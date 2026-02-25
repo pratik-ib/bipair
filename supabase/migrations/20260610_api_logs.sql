@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS api_logs (
   path TEXT NOT NULL,
   query_params JSONB,
   request_body JSONB,
+  response_body JSONB,
   response_status INTEGER NOT NULL,
   response_time_ms INTEGER NOT NULL,
   ip_address TEXT,
@@ -15,6 +16,9 @@ CREATE TABLE IF NOT EXISTS api_logs (
   error_message TEXT,
   api_key_present BOOLEAN DEFAULT FALSE
 );
+
+-- If the table already existed without response_body, add the column:
+ALTER TABLE api_logs ADD COLUMN IF NOT EXISTS response_body JSONB;
 
 -- Indexes for fast filtering and sorting
 CREATE INDEX IF NOT EXISTS api_logs_timestamp_idx ON api_logs(timestamp DESC);
