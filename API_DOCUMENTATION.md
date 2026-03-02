@@ -1101,6 +1101,85 @@ curl -X POST "https://bipair.vercel.app/api/auth/login" \
 | GET | /api/admin/payments | List payments |
 | POST | /api/admin/payments/{id}/refund | Process refund |
 | GET | /api/admin/notifications | List notifications |
+| GET | /api/admin/logs | List API request logs |
+| DELETE | /api/admin/logs | Clear all API logs |
+
+### API Request Logs
+
+View a real-time log of all chatbot API requests for debugging purposes. Accessible from the **Admin Panel → API Logs** page, or directly via API.
+
+**Endpoint:** `GET /api/admin/logs`
+
+> Requires admin session authentication (cookie).
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| page | number | Page number (default: 1) |
+| limit | number | Results per page (default: 50) |
+| method | string | Filter by HTTP method: `GET`, `POST`, `PATCH`, `DELETE` |
+| path | string | Filter by endpoint path (partial match) |
+| status | string | Filter by status: `2xx`, `4xx`, `5xx`, or exact code |
+
+**Example Request:**
+```bash
+# Get all 4xx error logs for booking endpoints
+curl -X GET "https://bipair.vercel.app/api/admin/logs?status=4xx&path=/api/bookings" \
+  -H "Cookie: your-session-cookie"
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "log-uuid",
+      "timestamp": "2025-06-10T14:32:15.123Z",
+      "method": "PATCH",
+      "path": "/api/bookings/BPJZGI",
+      "query_params": null,
+      "request_body": {
+        "specialRequests": "Vegetarian meal please"
+      },
+      "response_body": {
+        "success": true,
+        "data": {
+          "pnr": "BPJZGI",
+          "special_requests": "Vegetarian meal please"
+        }
+      },
+      "response_status": 200,
+      "response_time_ms": 312,
+      "ip_address": "102.89.1.5",
+      "user_agent": "PostmanRuntime/7.36.0",
+      "error_message": null,
+      "api_key_present": true
+    }
+  ],
+  "total": 142,
+  "page": 1,
+  "limit": 50
+}
+```
+
+**Each log entry contains:**
+- `method` / `path` — what was called
+- `query_params` — URL query string parameters (for GET requests)
+- `request_body` — JSON body sent by the chatbot (sensitive fields like card numbers are masked)
+- `response_body` — full JSON response returned by the API
+- `response_status` — HTTP status code
+- `response_time_ms` — how long the request took
+- `ip_address` — caller's IP
+- `api_key_present` — whether a valid API key was provided
+
+**Clear All Logs:**
+```bash
+DELETE /api/admin/logs
+```
+
+> **Setup Required:** The `api_logs` table must be created in Supabase before logs will be recorded. The Admin → API Logs page shows the required SQL if the table is missing.
 
 ---
 
