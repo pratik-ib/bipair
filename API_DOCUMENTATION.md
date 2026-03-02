@@ -366,24 +366,62 @@ x-api-key: bipair-demo-key-2026
 Content-Type: application/json
 ```
 
-**Request Body (all optional):**
+**Request Body (all optional — accepts both camelCase and snake_case):**
 
-| Field | Type | Description |
-|-------|------|-------------|
-| status | string | "pending", "confirmed", "checked_in", "cancelled" |
-| seat_number | string | New seat number |
-| special_requests | string | Updated requests |
-| payment_status | string | "pending", "paid", "failed", "refunded" |
+| Field | camelCase | snake_case | Type | Description |
+|-------|-----------|------------|------|-------------|
+| status | `status` | `status` | string | "pending", "confirmed", "checked_in", "cancelled" |
+| Seat number | `seatNumber` | `seat_number` | string | New seat number |
+| Special requests | `specialRequests` | `special_requests` | string | Updated requests |
+| Payment status | `paymentStatus` | `payment_status` | string | "pending", "paid", "failed", "refunded" |
 
-**Example Request:**
+> 💡 **Note:** Both camelCase and snake_case field names are accepted interchangeably.
+
+> ⚠️ Sending a body with none of the above fields returns `400 Bad Request`.
+
+**Example Request (camelCase):**
 ```bash
 curl -X PATCH "https://bipair.vercel.app/api/bookings/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{
-    "seat_number": "14B",
-    "special_requests": "Window seat preferred"
+    "specialRequests": "Vegetarian meal please",
+    "seatNumber": "14B"
   }'
+```
+
+**Example Request (snake_case — also valid):**
+```bash
+curl -X PATCH "https://bipair.vercel.app/api/bookings/BP7X2K" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "special_requests": "Vegetarian meal please",
+    "seat_number": "14B"
+  }'
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "booking-uuid",
+    "pnr": "BP7X2K",
+    "seat_number": "14B",
+    "special_requests": "Vegetarian meal please",
+    "status": "confirmed",
+    "payment_status": "paid"
+  }
+}
+```
+
+**Error (no valid fields in body):**
+```json
+{
+  "success": false,
+  "error": "No valid fields to update. Allowed fields: status, seat_number, special_requests, payment_status"
+}
 ```
 
 ---
