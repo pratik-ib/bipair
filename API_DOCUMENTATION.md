@@ -980,7 +980,7 @@ BipAir supports webhook notifications to automatically notify your system when p
 
 ### Setting Up Webhooks
 
-When creating a booking, include the `webhookUrl` field in your request:
+Include the `webhookUrl` field when creating a booking via `POST /api/bookings`:
 
 ```json
 {
@@ -989,13 +989,30 @@ When creating a booking, include the `webhookUrl` field in your request:
   "lastName": "Doe",
   "flightId": "flight-uuid",
   "fareClass": "economy",
+  "seatNumber": "12A",
   "webhookUrl": "https://your-server.com/webhooks/bipair"
 }
 ```
 
-### Payment Success Webhook
+The URL is stored against the payment record and fired automatically once payment is processed successfully.
 
-When a payment is successfully processed, BipAir will send a POST request to your webhook URL with the following payload:
+---
+
+### Supported Events
+
+| Event | Trigger | Description |
+|-------|---------|-------------|
+| `payment.success` | Payment processed successfully | Booking confirmed, ticket & boarding pass URLs ready |
+
+> More events (e.g. `booking.cancelled`, `checkin.completed`) may be added in future versions.
+
+---
+
+### Payment Success Webhook (`payment.success`)
+
+**Trigger:** `POST /api/payments/{paymentId}/process` completes with a successful payment result.
+
+BipAir sends a `POST` request to your `webhookUrl` with `Content-Type: application/json` and the following payload:
 
 ```json
 {
@@ -1036,38 +1053,134 @@ When a payment is successfully processed, BipAir will send a POST request to you
 }
 ```
 
+**Payload field reference:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `event` | string | Always `"payment.success"` |
+| `pnr` | string | Booking reference number |
+| `paymentId` | string | UUID of the payment record |
+| `amount` | number | Amount charged in USD |
+| `currency` | string | Always `"USD"` |
+| `transactionRef` | string | Unique transaction reference |
+| `ticketUrl` | string | Direct URL to download the PDF e-ticket |
+| `checkInUrl` | string | Customer check-in page URL |
+| `boardingPassUrl` | string | PDF boarding pass URL (available after check-in) |
+| `passenger` | object | Passenger details including updated loyalty points |
+| `flight` | object | Full flight info (number, route, times, gate, terminal) |
+| `booking` | object | Seat number, fare class, source, created timestamp |
+
+---
+
 ### Webhook Behavior
 
-- **Non-blocking**: Webhook delivery is asynchronous and does not affect the payment response
-- **Retry**: No automatic retry on failure (webhook fires once)
-- **Timeout**: Standard HTTP timeout applies
-- **Content-Type**: `application/json`
+| Property | Value |
+|----------|-------|
+| Method | `POST` |
+| Content-Type | `application/json` |
+| Delivery | Synchronous (awaited before payment response is returned) |
+| Retry | None — fires once only |
+| Timeout | Standard HTTP (no custom timeout set) |
+| Failure handling | Failure is logged but does **not** affect the payment response |
+
+> **Important:** The webhook call is `await`-ed server-side before the payment response is returned. This means:
+> - The payment response may take an extra 1–3 seconds if the webhook endpoint is slow.
+> - The webhook **will** fire reliably even on serverless (Vercel) deployments.
+> - A failed webhook (network error or non-2xx response) is recorded in the API logs but the payment still succeeds.
+
+---
+
+### Webhook Logs in Admin Panel
+
+Every outgoing webhook request is recorded in **Admin → API Logs** alongside regular chatbot API calls. Webhook entries are easy to identify:
+
+- **Path** is prefixed with `[WEBHOOK]`, e.g. `[WEBHOOK] https://your-server.com/webhooks/bipair`
+- **Request Body** shows the full payload sent to your server
+- **Response Body** shows what your server returned
+- **Status** shows the HTTP status your server responded with (or `0` for network failures)
+- **Duration** shows how long your webhook endpoint took to respond
+
+This makes it easy to debug delivery issues directly from the admin panel.
+
+---
 
 ### Using Webhook Data
 
-The webhook payload includes everything you need to:
-1. **Send e-ticket**: Use `ticketUrl` to download/forward the PDF ticket
-2. **Enable check-in**: Share `checkInUrl` with the passenger
-3. **Send boarding pass**: After check-in, use `boardingPassUrl`
-4. **Personalize messages**: Use passenger and flight details
+The payload includes everything needed to drive post-payment automation:
 
-### Example Webhook Handler (Node.js)
+1. **Send e-ticket to passenger** → use `ticketUrl` to fetch and forward the PDF
+2. **Send check-in reminder** → share `checkInUrl` with the passenger via WhatsApp
+3. **Confirm booking in your system** → use `pnr`, `transactionRef`, and booking details
+4. **Update loyalty points UI** → use `passenger.loyaltyPoints` (already updated)
+
+---
+
+### Example Webhook Handler (Node.js / Express)
 
 ```javascript
+const express = require('express');
+const app = express();
+app.use(express.json());
+
 app.post('/webhooks/bipair', async (req, res) => {
-  const { event, pnr, ticketUrl, passenger, flight } = req.body;
-  
+  // Always respond 200 quickly to avoid timeout
+  res.status(200).json({ received: true });
+
+  const { event, pnr, transactionRef, ticketUrl, checkInUrl, passenger, flight, booking } = req.body;
+
   if (event === 'payment.success') {
-    // Send confirmation message via WhatsApp
+    console.log(`[BipAir] Payment confirmed for PNR ${pnr} | Ref: ${transactionRef}`);
+
+    // Send WhatsApp confirmation to passenger
     await sendWhatsAppMessage(passenger.phone, {
-      text: `✅ Payment confirmed for flight ${flight.flightNumber}!`,
-      document: ticketUrl, // Attach e-ticket PDF
+      text: `✅ *Booking Confirmed!*\n\n` +
+            `Flight: ${flight.flightNumber}\n` +
+            `Route: ${flight.originCity} → ${flight.destinationCity}\n` +
+            `Seat: ${booking.seatNumber} (${booking.fareClass})\n` +
+            `Departure: ${new Date(flight.departureTime).toLocaleString()}\n\n` +
+            `Your e-ticket: ${ticketUrl}\n` +
+            `Check in here: ${checkInUrl}`,
     });
   }
-  
-  res.status(200).send('OK');
 });
 ```
+
+> **Tip:** Respond with `200 OK` as early as possible in your handler to prevent BipAir from treating it as a failure. Process the event asynchronously if needed.
+
+---
+
+### Testing Webhooks
+
+Use [webhook.site](https://webhook.site) or [ngrok](https://ngrok.com) to capture webhook requests during development:
+
+```bash
+# Create a booking with your test webhook URL
+curl -X POST "https://bipair.vercel.app/api/bookings" \
+  -H "x-api-key: bipair-demo-key-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "passengerPhone": "+255700000001",
+    "firstName": "Test",
+    "lastName": "User",
+    "flightId": "your-flight-id",
+    "fareClass": "economy",
+    "webhookUrl": "https://webhook.site/your-unique-id"
+  }'
+```
+
+Then process payment with `forceSuccess: true` to guarantee the webhook fires:
+
+```bash
+curl -X POST "https://bipair.vercel.app/api/payments/{paymentId}/process" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cardLastFour": "4242",
+    "cardholderName": "Test User",
+    "forceSuccess": true
+  }'
+```
+
+Check **Admin → API Logs** to see the webhook delivery attempt, its payload, and your server's response.
 
 ---
 
