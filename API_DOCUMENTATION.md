@@ -1321,5 +1321,6 @@ GET /api/boarding-pass/{pnr} # Boarding Pass PDF
 
 For API issues or questions, contact the development team.
 
-**API Version:** 1.0  
-**Last Updated:** June 2025
+**API Version:** 1.1  
+**Last Updated:** June 2025  
+**Base URL:** `https://bipair.vercel.app`
