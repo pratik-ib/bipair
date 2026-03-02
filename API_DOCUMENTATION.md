@@ -110,7 +110,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/search?origin=DAR&destination=LHR&date=2025-06-15" \
+curl -X GET "https://bipair.vercel.app/api/flights/search?origin=DAR&destination=LHR&date=2025-06-15" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -168,7 +168,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/123e4567-e89b-12d3-a456-426614174000" \
+curl -X GET "https://bipair.vercel.app/api/flights/123e4567-e89b-12d3-a456-426614174000" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -238,7 +238,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/bookings" \
+curl -X POST "https://bipair.vercel.app/api/bookings" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{
@@ -267,10 +267,10 @@ curl -X POST "https://bipair-chat.preview.emergentagent.com/api/bookings" \
     "paymentId": "payment-uuid-here",
     "amount": 450,
     "currency": "USD",
-    "checkoutUrl": "https://bipair-chat.preview.emergentagent.com/checkout/payment-uuid-here",
-    "ticketUrl": "https://bipair-chat.preview.emergentagent.com/api/ticket/BP7X2K",
-    "checkInUrl": "https://bipair-chat.preview.emergentagent.com/checkin/BP7X2K",
-    "boardingPassUrl": "https://bipair-chat.preview.emergentagent.com/api/boarding-pass/BP7X2K",
+    "checkoutUrl": "https://bipair.vercel.app/checkout/payment-uuid-here",
+    "ticketUrl": "https://bipair.vercel.app/api/ticket/BP7X2K",
+    "checkInUrl": "https://bipair.vercel.app/checkin/BP7X2K",
+    "boardingPassUrl": "https://bipair.vercel.app/api/boarding-pass/BP7X2K",
     "passenger": {
       "id": "passenger-uuid",
       "firstName": "John",
@@ -302,7 +302,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/bookings/BP7X2K" \
+curl -X GET "https://bipair.vercel.app/api/bookings/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -377,7 +377,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X PATCH "https://bipair-chat.preview.emergentagent.com/api/bookings/BP7X2K" \
+curl -X PATCH "https://bipair.vercel.app/api/bookings/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{
@@ -401,7 +401,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X DELETE "https://bipair-chat.preview.emergentagent.com/api/bookings/BP7X2K" \
+curl -X DELETE "https://bipair.vercel.app/api/bookings/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -443,7 +443,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/passengers" \
+curl -X POST "https://bipair.vercel.app/api/passengers" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{
@@ -493,7 +493,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/passengers/%2B255712345678" \
+curl -X GET "https://bipair.vercel.app/api/passengers/%2B255712345678" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -541,7 +541,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K" \
+curl -X GET "https://bipair.vercel.app/api/checkin/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -554,7 +554,7 @@ curl -X GET "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K" \
     "reason": null,
     "currentSeat": "12A",
     "checkinStatus": "confirmed",
-    "seatMapImageUrl": "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image",
+    "seatMapImageUrl": "https://bipair.vercel.app/api/checkin/BP7X2K/seat-map-image",
     "flight": {
       "flightNumber": "BP101",
       "origin": "DAR",
@@ -594,7 +594,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K" \
+curl -X POST "https://bipair.vercel.app/api/checkin/BP7X2K" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{"seatNumber": "14A"}'
@@ -607,9 +607,9 @@ curl -X POST "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K" 
   "data": {
     "message": "Check-in successful",
     "seatNumber": "14A",
-    "boardingPassUrl": "https://bipair-chat.preview.emergentagent.com/api/boarding-pass/BP7X2K",
-    "confirmationPageUrl": "https://bipair-chat.preview.emergentagent.com/checkin/BP7X2K",
-    "seatMapImageUrl": "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image"
+    "boardingPassUrl": "https://bipair.vercel.app/api/boarding-pass/BP7X2K",
+    "confirmationPageUrl": "https://bipair.vercel.app/checkin/BP7X2K",
+    "seatMapImageUrl": "https://bipair.vercel.app/api/checkin/BP7X2K/seat-map-image"
   }
 }
 ```
@@ -644,7 +644,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/payments/initiate" \
+curl -X POST "https://bipair.vercel.app/api/payments/initiate" \
   -H "x-api-key: bipair-demo-key-2026" \
   -H "Content-Type: application/json" \
   -d '{"pnr": "BP7X2K"}'
@@ -658,7 +658,7 @@ curl -X POST "https://bipair-chat.preview.emergentagent.com/api/payments/initiat
     "paymentId": "payment-uuid",
     "amount": 450,
     "currency": "USD",
-    "checkoutUrl": "https://bipair-chat.preview.emergentagent.com/checkout/payment-uuid",
+    "checkoutUrl": "https://bipair.vercel.app/checkout/payment-uuid",
     "bookingStatus": "pending",
     "paymentStatus": "pending"
   }
@@ -690,7 +690,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/payments/payment-uuid/process" \
+curl -X POST "https://bipair.vercel.app/api/payments/payment-uuid/process" \
   -H "Content-Type: application/json" \
   -d '{
     "cardLastFour": "4242",
@@ -733,7 +733,7 @@ Check payment status.
 
 **Example Request:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/payments/payment-uuid"
+curl -X GET "https://bipair.vercel.app/api/payments/payment-uuid"
 ```
 
 **Example Response:**
@@ -774,7 +774,7 @@ Content-Type: application/json
 
 **Example Request:**
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/notifications/send" \
+curl -X POST "https://bipair.vercel.app/api/notifications/send" \
   -H "Content-Type: application/json" \
   -d '{
     "passengerId": "passenger-uuid",
@@ -827,7 +827,7 @@ x-api-key: bipair-demo-key-2026
 
 **Example Request (Economy class seats only):**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?fareClass=economy&format=url" \
+curl -X GET "https://bipair.vercel.app/api/flights/flight-uuid/seat-map-image?fareClass=economy&format=url" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -841,7 +841,7 @@ curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/flight-uu
 
 **Example Request (All seats, PNG stream):**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?highlight=12A" \
+curl -X GET "https://bipair.vercel.app/api/flights/flight-uuid/seat-map-image?highlight=12A" \
   -H "x-api-key: bipair-demo-key-2026" \
   --output seat-map.png
 ```
@@ -850,7 +850,7 @@ curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/flight-uu
 
 **Example Request (URL):**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/flights/flight-uuid/seat-map-image?format=url&fareClass=business" \
+curl -X GET "https://bipair.vercel.app/api/flights/flight-uuid/seat-map-image?format=url&fareClass=business" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -883,7 +883,7 @@ Generate seat map for check-in. **Automatically uses the booking's fare class** 
 
 **Example:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/checkin/BP7X2K/seat-map-image?format=url" \
+curl -X GET "https://bipair.vercel.app/api/checkin/BP7X2K/seat-map-image?format=url" \
   -H "x-api-key: bipair-demo-key-2026"
 ```
 
@@ -899,7 +899,7 @@ Download e-ticket PDF for a booking.
 
 **Example:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/ticket/BP7X2K" \
+curl -X GET "https://bipair.vercel.app/api/ticket/BP7X2K" \
   --output ticket-BP7X2K.pdf
 ```
 
@@ -917,7 +917,7 @@ Download boarding pass PDF (requires checked-in status).
 
 **Example:**
 ```bash
-curl -X GET "https://bipair-chat.preview.emergentagent.com/api/boarding-pass/BP7X2K" \
+curl -X GET "https://bipair.vercel.app/api/boarding-pass/BP7X2K" \
   --output boarding-pass-BP7X2K.pdf
 ```
 
@@ -964,9 +964,9 @@ When a payment is successfully processed, BipAir will send a POST request to you
   "amount": 450,
   "currency": "USD",
   "transactionRef": "TXN1234567890ABCD",
-  "ticketUrl": "https://bipair-chat.preview.emergentagent.com/api/ticket/BP7X2K",
-  "checkInUrl": "https://bipair-chat.preview.emergentagent.com/checkin/BP7X2K",
-  "boardingPassUrl": "https://bipair-chat.preview.emergentagent.com/api/boarding-pass/BP7X2K",
+  "ticketUrl": "https://bipair.vercel.app/api/ticket/BP7X2K",
+  "checkInUrl": "https://bipair.vercel.app/checkin/BP7X2K",
+  "boardingPassUrl": "https://bipair.vercel.app/api/boarding-pass/BP7X2K",
   "passenger": {
     "firstName": "John",
     "lastName": "Doe",
@@ -1039,7 +1039,7 @@ These APIs are for the admin panel and require session-based authentication.
 **Endpoint:** `POST /api/auth/login`
 
 ```bash
-curl -X POST "https://bipair-chat.preview.emergentagent.com/api/auth/login" \
+curl -X POST "https://bipair.vercel.app/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "Infobip@123"}'
 ```
