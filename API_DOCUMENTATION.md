@@ -1436,4 +1436,5 @@ For API issues or questions, contact the development team.
 
 **API Version:** 1.1  
 **Last Updated:** June 2025  
-**Base URL:** `https://bipair.vercel.app`
+**Base URL:** `https://bipair.vercel.app`  
+**Changelog:** v1.1 — Added API request logs, response body logging, webhook logging, camelCase field support for PATCH /bookings/{pnr}
