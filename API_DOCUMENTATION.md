@@ -1,7 +1,7 @@
 # BipAir API Documentation
 
-> **Version:** 1.0  
-> **Base URL:** `https://bipair-chat.preview.emergentagent.com`  
+> **Version:** 1.1  
+> **Base URL:** `https://bipair.vercel.app`  
 > **Last Updated:** June 2025
 
 ---
